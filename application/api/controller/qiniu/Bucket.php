@@ -75,9 +75,6 @@ class Bucket extends Base
         // 要列取文件的公共前缀
         $arguments['prefix'] = '';
         if(input('prefix')) $arguments['prefix'] = input('prefix');
-        // 要列取文件的后缀
-        $arguments['suffix'] = '';
-        if(input('suffix')) $arguments['suffix'] = input('suffix');
         // 上次列举返回的位置标记，作为本次列举的起点信息。
         $arguments['marker'] = '';
         if(input('marker')) $arguments['marker'] = input('marker');

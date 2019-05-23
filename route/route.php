@@ -26,8 +26,10 @@ Route::resource(':version/apiuser','api/:version.apiuser');       //资源路由
 Route::post(':version/apiuser/save','api/:version.apiuser/save');       //添加用户
 
 
-//获取getAuthentication
+//获取authentication
 Route::resource(':version/authentication/index', 'api/:version.Authentication');
+//获取sign
+Route::resource(':version/sign/index', 'api/:version.Sign');
 //所有路由匹配不到情况下触发该路由
 Route::miss('\app\api\controller\Exception::miss');
 

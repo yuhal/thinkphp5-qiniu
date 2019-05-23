@@ -7,6 +7,10 @@ use app\api\controller\Oauth;
 use think\facade\Cache;
 use think\db;
 
+//主要为跨域CORS配置的两大基本信息,Origin和headers
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authentication');
+
 /**
  * 生成token
  */
