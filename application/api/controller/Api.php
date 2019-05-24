@@ -8,9 +8,7 @@ use app\api\controller\Oauth;
 
 //主要为跨域CORS配置的两大基本信息,Origin和headers
 header('Access-Control-Allow-Origin: *');
-// header('Access-Control-Allow-Authentication: *');
-header('Access-Control-Allow-Headers:Authentication, Origin, X-Requested-With, Content-Type, Accept');
-header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authentication');
 
 /**
  * api 入口文件基类，需要控制权限的控制器都应该继承该类

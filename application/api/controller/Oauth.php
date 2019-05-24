@@ -47,10 +47,10 @@ class Oauth
      */
     public static function getClient()
     {   
+
         //获取头部信息
         try {
-
-            $authorization = Request::header('authentication');   //tp5.1Facade调用 获取头部字段
+            $authorization = empty(Request::header('authentication')) ? input('authentication') : Request::header('authentication') ;     //tp5.1Facade调用 获取头部字段
             $authorization = explode(" ", $authorization);  //authorization：USERID xxxx
             $authorizationInfo  = explode(":", base64_decode($authorization[1]));
             $clientInfo['uid'] = $authorizationInfo[2];
