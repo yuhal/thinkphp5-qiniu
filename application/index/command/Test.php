@@ -40,6 +40,22 @@ class Test extends Command
                         $listImages[] = $value;
                     } 
                 }
+                
+                $hadChangeList_filter['prefix'] = $bucket;
+                $hadChangeList_filter['marker'] = '';
+                $hadChangeList_filter['limit'] = '';
+                $hadChangeList_filter['delimiter'] = '';
+                $hadChangeList = $qiniuSdk->listFiles($hadChangeList_filter);
+                if(!empty($hadChangeList[0]['items'])){
+                    $hadChangeListImages = [];
+                    foreach ($hadChangeList[0]['items'] as $key => $value) {
+                        if(isImage($value['key'])){
+                            $hadChangeListImages[] = $value;
+                        } 
+                    }
+                    $listImages = get_diff_array_by_filter($listImages,$hadChangeListImages);
+                }
+                
                 if(!empty($listImages)){
                     $keys = array_column($listImages, 'key');
                     $keyPairs = array();
