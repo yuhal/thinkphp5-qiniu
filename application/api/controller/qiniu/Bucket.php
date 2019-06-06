@@ -5,6 +5,7 @@ namespace app\api\controller\qiniu;
 use think\Controller;
 use think\Db;
 use think\Request;
+use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Base;
 use app\api\validate\Bucket as validate;
@@ -84,7 +85,13 @@ class Bucket extends Base
         // 分隔符
         $arguments['delimiter'] = '';
         if(input('delimiter')) $arguments['delimiter'] = input('delimiter');
-        $listFiles = $qiniuSdk->listFiles($arguments);
+
+        $chcheKey = md5(json_encode($arguments));
+        $listFiles = cache('BucketReadListFiles_'.$chcheKey);
+        if(!$listFiles){
+            $listFiles = $qiniuSdk->listFiles($arguments);
+            cache('BucketReadListFiles_'.$chcheKey, $listFiles, 3600*24);
+        }
         if($listFiles){
             return self::returnMsg(200,'success',$listFiles);
         }else{
