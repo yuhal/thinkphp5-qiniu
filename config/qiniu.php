@@ -20,4 +20,6 @@ return [
     'secretKey'              => '5keP7EoNBFCtUgHuN8BMzro6zJFN85GyUzKebO-K',
     // 七牛账号
     'shared'              => '15736736889@163.com',
+    // 默认仓库
+    'bucket'              => 'yuhal-picture',
 ];

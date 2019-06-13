@@ -18,15 +18,12 @@ class Test extends Command
         $output->writeln('Date Crontab job start...');
         /*** 这里写计划任务列表集 START ***/
 
-        $re = $this->autoChangeImageName('yuhal-picture');
+        $re = $this->autoChangeImageName(config('qiniu.bucket'));
         if($re==false){
-            $email = '15736736889@163.com';
-            $name = 'HaI';
             $Subject = '系统异常';
             $Body = '自动变更某个仓库仓库下的图片名称功能异常';
-            (new Mail)->sendEmailReminders($email,$name,$Subject,$Body);
+            (new Mail)->sendEmailReminders($Subject,$Body);
         }
-
         /*** 这里写计划任务列表集 END ***/
         $output->writeln('Date Crontab job end...');
     }
@@ -79,8 +76,9 @@ class Test extends Command
                         $qiniuSdk->buildBatchMove($arguments); 
                     }
                 }
+                return true;
             }   
-            return true;
+            return false;
         } catch (Exception $e) {
             return false;
         }

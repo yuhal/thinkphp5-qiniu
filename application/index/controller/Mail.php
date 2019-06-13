@@ -26,7 +26,7 @@ class Mail
      * @param string $Body 邮件内容
      * @return \think\Response
      */
-    public function sendEmailReminders($email,$name,$Subject,$Body)
+    public function sendEmailReminders($Subject,$Body)
     {
         try {
             //服务器设置
@@ -41,7 +41,7 @@ class Mail
 
             //收件人
             $this->PHPMailer->setFrom(config('mail.Username'), config('mail.Sender'));  // 寄送人邮箱地址，寄送人名称
-            $this->PHPMailer->addAddress($email, $name);     // 收件人邮箱地址，收件人名称
+            $this->PHPMailer->addAddress(config('mail.Email'), config('mail.Receiver'));     // 收件人邮箱地址，收件人名称
             // $this->PHPMailer->addAddress(config('mail.Username'));               // 名称是可选的
             // $this->PHPMailer->addReplyTo(config('mail.Username'), 'Information');    
             // $this->PHPMailer->addCC(config('mail.Username'));   //抄送

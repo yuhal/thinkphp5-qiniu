@@ -24,6 +24,10 @@ return [
     'Password'=>'YH2771638740',
     // 寄送人名称
     'Sender'=>'HaI',
+    // 收件人名称
+    'Receiver'=>'HaI',
+    // 收件人邮箱地址
+    'Email'=>'15736736889@163.com',
     // 启用TLS加密，' ssl '也接受
     'SMTPSecure'=>'ssl',
     // 要连接到的TCP端口
