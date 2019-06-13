@@ -9,8 +9,6 @@ use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Base;
 use app\api\validate\Bucket as validate;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 use qiniu\QiniuSdk;
 
 class Bucket extends Base
@@ -22,7 +20,6 @@ class Bucket extends Base
     public function __construct(Request $request){
         parent::__construct($request);
         $this->validate = new validate();
-        $this->PHPMailer = new PHPMailer(true);
     }
     /**
      * 显示资源列表
@@ -64,7 +61,6 @@ class Bucket extends Base
      */
     public function read($id)
     {
-        var_dump('<pre>',$this->PHPMailer);exit;
         //参数验证
         if(!$this->validate->check(input(''))){
             return self::returnMsg(401,$this->validate->getError());
