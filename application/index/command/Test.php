@@ -19,7 +19,7 @@ class Test extends Command
         /*** 这里写计划任务列表集 START ***/
 
         $re = $this->autoChangeImageName(config('qiniu.bucket'));
-        if($re==false){
+        if($re==true){
             $Subject = '系统异常';
             $Body = '自动变更某个仓库仓库下的图片名称功能异常';
             (new Mail)->sendEmailReminders($Subject,$Body);

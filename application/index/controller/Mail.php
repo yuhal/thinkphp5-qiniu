@@ -39,8 +39,8 @@ class Mail
             $this->PHPMailer->SMTPSecure = config('mail.SMTPSecure');                             // 启用TLS加密，' ssl '也接受
             $this->PHPMailer->Port       = config('mail.Port');                                    // 要连接到的TCP端口
 
-            //收件人
-            $this->PHPMailer->setFrom(config('mail.Username'), config('mail.Sender'));  // 寄送人邮箱地址，寄送人名称
+            //收件人mail
+            $this->PHPMailer->setFrom(config('mail.Username'), config('.Sender'));  // 寄送人邮箱地址，寄送人名称
             $this->PHPMailer->addAddress(config('mail.Email'), config('mail.Receiver'));     // 收件人邮箱地址，收件人名称
             // $this->PHPMailer->addAddress(config('mail.Username'));               // 名称是可选的
             // $this->PHPMailer->addReplyTo(config('mail.Username'), 'Information');    
