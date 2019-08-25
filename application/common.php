@@ -42,3 +42,38 @@ function get_diff_array_by_filter($arr1,$arr2){
 	    return $arr1;
 	}
 }
+
+/**
+ * 二维数组根据某个键值排序
+ * @param $arr
+ * @param $keys
+ * @param $type
+ * @return array
+ */
+function arraySort($arr, $keys, $type = 'asc') {
+    $keysvalue = $new_array = array();
+    foreach ($arr as $k => $v){
+        $keysvalue[$k] = $v[$keys];
+    }
+    $type == 'asc' ? asort($keysvalue) : arsort($keysvalue);
+    reset($keysvalue);
+    foreach ($keysvalue as $k => $v) {
+       $new_array[$k] = $arr[$k];
+    }
+    return $new_array;
+}
+
+/**
+ * 重构数组键名
+ * @param $arr
+ * @return array
+ */
+function arrayKeyAsc($arr){
+    $new_array = array();
+    if($arr){
+        foreach ($arr as $key => $value) {
+            $new_array[] = $value;
+        }
+    }
+    return $new_array;
+}

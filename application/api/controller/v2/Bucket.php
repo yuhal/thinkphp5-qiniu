@@ -93,6 +93,22 @@ class Bucket extends Base
             cache('BucketReadListFiles_'.$chcheKey, $listFiles, 3600*24);
         }
         if($listFiles){
+            // 排序
+            switch (input('order')) {
+                case 1:
+                    // 按照添加时间正序
+                    $items = arraySort($listFiles[0]['items'],'putTime');
+                    break;
+                case 2:
+                    // 按照添加时间倒序
+                    $items = arraySort($listFiles[0]['items'],'putTime','desc');
+                    break;
+                default:
+                    // 按照添加时间倒序
+                    $items = arraySort($listFiles[0]['items'],'putTime','desc');
+                    break;
+            }
+            $listFiles[0]['items'] = arrayKeyAsc($items);
             return self::returnMsg(200,'success',$listFiles);
         }else{
             return self::returnMsg(500,'fail',$listFiles);
