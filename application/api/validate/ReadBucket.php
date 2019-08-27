@@ -5,7 +5,7 @@ use think\Validate;
 /**
  * 生成token参数验证器
  */
-class Bucket extends Validate
+class ReadBucket extends Validate
 {
 
     protected $rule = [

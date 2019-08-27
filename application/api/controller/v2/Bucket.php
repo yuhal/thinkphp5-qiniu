@@ -8,7 +8,8 @@ use think\Request;
 use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Base;
-use app\api\validate\Bucket as validate;
+use app\api\validate\ReadBucket as ValidateRead;
+use app\api\validate\UpdateBucket as ValidateUpdate;
 use qiniu\QiniuSdk;
 
 class Bucket extends Base
@@ -19,7 +20,6 @@ class Bucket extends Base
      */
     public function __construct(Request $request){
         parent::__construct($request);
-        $this->validate = new validate();
     }
     /**
      * 显示资源列表
@@ -61,9 +61,10 @@ class Bucket extends Base
      */
     public function read($id)
     {
+        $validate = new ValidateRead();
         //参数验证
-        if(!$this->validate->check(input(''))){
-            return self::returnMsg(401,$this->validate->getError());
+        if(!$validate->check(input(''))){
+            return self::returnMsg(401,$validate->getError());
         }
         $config = array_merge(config('qiniu.'),['bucket'=>$id]);
         $qiniuSdk = new QiniuSdk($config);
@@ -135,7 +136,35 @@ class Bucket extends Base
      */
     public function update(Request $request, $id)
     {
-        echo "update";
+        $config = array_merge(config('qiniu.'),['bucket'=>$id]);
+        $qiniuSdk = new QiniuSdk($config);
+        $validate = new ValidateUpdate();
+        //参数验证
+        if(!$validate->check(input('put.'))){
+            return self::returnMsg(401,$validate->getError());
+        }
+        $imgBase64 = input('put.uri');
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/',$imgBase64,$res)) {
+            //获取图片类型   
+            $type = $res[2];
+            //图片保存路径
+            $new_file = "/mnt/avatar/".date('Ymd',time()).'/';
+            if (!file_exists($new_file)) {
+               mkdir($new_file,0777,true);
+            }
+            $new_file = $new_file.time().'.'.$type;
+            if (file_put_contents($new_file,base64_decode(str_replace($res[1],'', $imgBase64)))) {
+                //图片名字
+                $arguments['file'] = uniqid().'.'.$type;
+                $arguments['filepath'] = $new_file;
+                $putFileRe = $qiniuSdk->putFile($arguments);
+                if($putFileRe){
+                    $result['fileName'] = $putFileRe;
+                    return self::returnMsg(200,'success',$result);
+                }
+            }
+        }
+        return self::returnMsg(500,'fail');
     }
 
     /**
