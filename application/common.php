@@ -64,6 +64,23 @@ function arraySort($arr, $keys, $type = 'asc') {
 }
 
 /**
+ * 过反射函数转化为数组可以处理这样的问题
+ * @param $object
+ * @return array
+ */
+function object_to_array($object) {  
+    $ref = new \ReflectionClass($object);
+    $props = $ref->getProperties();
+    $array = array();
+    foreach ($props as $prop) {
+        $prop->setAccessible(true);
+        $array[$prop->getName()] = $prop->getValue($object);
+        $prop->setAccessible(false);
+    }
+    return $array;
+}
+
+/**
  * 重构数组键名
  * @param $arr
  * @return array

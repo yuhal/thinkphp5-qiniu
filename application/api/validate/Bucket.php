@@ -1,18 +1,26 @@
 <?php
-namespace app\api\validate\bucket;
+namespace app\api\validate;
 
 use think\Validate;
 /**
  * 生成token参数验证器
  */
-class Read extends Validate
+class Bucket extends Validate
 {
 
     protected $rule = [
         'id'       =>  'require',
         'limit'       =>  'number|min:1',
+        'uri'       =>  'require',
     ];
+
     protected $message  =   [
         'id.require'    => 'id不能为空',
+        'uri.require'    => 'uri不能为空',
+    ];
+
+    protected $scene = [
+        'read'  =>  ['limit'],
+        'update'  =>  ['uri'],
     ];
 }

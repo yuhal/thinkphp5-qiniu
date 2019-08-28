@@ -8,8 +8,7 @@ use think\Request;
 use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Base;
-use app\api\validate\bucket\Read;
-// use app\api\validate\bucket\Update;
+use app\api\validate\Bucket as Validate;
 use qiniu\QiniuSdk;
 
 class Bucket extends Base
@@ -20,6 +19,7 @@ class Bucket extends Base
      */
     public function __construct(Request $request){
         parent::__construct($request);
+        $this->Validate = new Validate();
     }
     /**
      * 显示资源列表
@@ -61,10 +61,9 @@ class Bucket extends Base
      */
     public function read($id)
     {
-        $validate = new Read();
         //参数验证
-        if(!$validate->check(input(''))){
-            return self::returnMsg(401,$validate->getError());
+        if(!$this->Validate->scene(request()->action())->check(input('get.'))){
+            return self::returnMsg(401,$this->Validate->getError());
         }
         $config = array_merge(config('qiniu.'),['bucket'=>$id]);
         $qiniuSdk = new QiniuSdk($config);
@@ -93,7 +92,7 @@ class Bucket extends Base
             $listFiles = $qiniuSdk->listFiles($arguments);
             cache('BucketReadListFiles_'.$chcheKey, $listFiles, 3600*24);
         }
-        if($listFiles){
+        if(isset($listFiles[0]['items'])){
             // 排序
             switch (input('order')) {
                 case 1:
@@ -112,7 +111,8 @@ class Bucket extends Base
             $listFiles[0]['items'] = arrayKeyAsc($items);
             return self::returnMsg(200,'success',$listFiles);
         }else{
-            return self::returnMsg(500,'fail',$listFiles);
+            $listFiles = object_to_array($listFiles[1]);
+            return self::returnMsg(500,'fail',json_decode($listFiles['response']->body,true));
         }
     }
 
@@ -136,35 +136,42 @@ class Bucket extends Base
      */
     public function update(Request $request, $id)
     {
+        //参数验证
+        if(!$this->Validate->scene(request()->action())->check(input('put.'))){
+            return self::returnMsg(401,$this->Validate->getError());
+        }
         $config = array_merge(config('qiniu.'),['bucket'=>$id]);
         $qiniuSdk = new QiniuSdk($config);
-        $validate = new ValidateUpdate();
-        //参数验证
-        if(!$validate->check(input('put.'))){
-            return self::returnMsg(401,$validate->getError());
-        }
         $imgBase64 = input('put.uri');
         if (preg_match('/^(data:\s*image\/(\w+);base64,)/',$imgBase64,$res)) {
             //获取图片类型   
             $type = $res[2];
             //图片保存路径
-            $new_file = "/mnt/avatar/".date('Ymd',time()).'/';
-            if (!file_exists($new_file)) {
-               mkdir($new_file,0777,true);
+            $fileDir = "/mnt/avatar/".date('Ymd',time()).'/';
+            if (!file_exists($fileDir)) {
+               mkdir($fileDir,0777,true);
             }
-            $new_file = $new_file.time().'.'.$type;
-            if (file_put_contents($new_file,base64_decode(str_replace($res[1],'', $imgBase64)))) {
+            $fileName = $id.'-'.time().'.'.$type;
+            $filePath = $fileDir.$fileName;
+            if (file_put_contents($filePath,base64_decode(str_replace($res[1],'', $imgBase64)))) {
                 //图片名字
-                $arguments['file'] = uniqid().'.'.$type;
-                $arguments['filepath'] = $new_file;
+                $arguments['file'] = $fileName;
+                $arguments['filepath'] = $filePath;
                 $putFileRe = $qiniuSdk->putFile($arguments);
                 if($putFileRe){
                     $result['fileName'] = $putFileRe;
+                    //删除对应目录的文件
+                    unlink($filePath);
                     return self::returnMsg(200,'success',$result);
                 }
+                return self::returnMsg(500,'fail','图片上传失败');
+            }else{
+                return self::returnMsg(500,'fail','图片地址不存在');
             }
+        }else{
+            return self::returnMsg(500,'fail','图片解析失败');
         }
-        return self::returnMsg(500,'fail');
+        
     }
 
     /**
