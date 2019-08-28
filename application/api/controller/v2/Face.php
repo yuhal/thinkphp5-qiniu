@@ -8,9 +8,9 @@ use think\Request;
 use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Base;
-use app\api\validate\SaveFace as ValidateSave;
-use app\api\validate\ReadFace as ValidateRead;
-use app\api\validate\UpdateFace as ValidateUpdate;
+use app\api\validate\face\Save;
+use app\api\validate\face\Read;
+use app\api\validate\face\Update;
 use qiniu\QiniuSdk;
 
 class Face extends Base
@@ -54,7 +54,7 @@ class Face extends Base
      */
     public function save(Request $request)
     {
-        $validate = new ValidateSave();
+        $validate = new Save();
         //参数验证
         if(!$validate->check(input('post.'))){
             return self::returnMsg(401,$validate->getError());
@@ -72,14 +72,14 @@ class Face extends Base
      */
     public function read($id)
     {
-        $validate = new ValidateRead();
+        $validate = new Read();
         //参数验证
         if(!$validate->check(input('get.'))){
             return self::returnMsg(401,$validate->getError());
         }
         // 列出该用户下所有的图像库
         $faceGroupList = $this->qiniuSdk->listFaceGroup();
-        if(!in_array($id, $faceGroupList['result'])){
+        if(isset($faceGroupList['result']) && !in_array($id, $faceGroupList['result'])){
             self::returnMsg(401, '该图像库不存在！');
         }
         // 要搜索的头像地址
@@ -115,7 +115,7 @@ class Face extends Base
      */
     public function update(Request $request, $id)
     {
-        $validate = new ValidateUpdate();
+        $validate = new Update();
         //参数验证
         if(!$validate->check(input('put.'))){
             return self::returnMsg(401,$validate->getError());

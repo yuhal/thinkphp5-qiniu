@@ -1,11 +1,11 @@
 <?php
-namespace app\api\validate;
+namespace app\api\validate\face;
 
 use think\Validate;
 /**
  * 生成token参数验证器
  */
-class UpdateBucket extends Validate
+class Update extends Validate
 {
 
     protected $rule = [

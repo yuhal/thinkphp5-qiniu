@@ -1,11 +1,11 @@
 <?php
-namespace app\api\validate;
+namespace app\api\validate\bucket;
 
 use think\Validate;
 /**
  * 生成token参数验证器
  */
-class ReadBucket extends Validate
+class Read extends Validate
 {
 
     protected $rule = [

@@ -8,8 +8,8 @@ use think\Request;
 use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Base;
-use app\api\validate\ReadBucket as ValidateRead;
-use app\api\validate\UpdateBucket as ValidateUpdate;
+use app\api\validate\bucket\Read;
+// use app\api\validate\bucket\Update;
 use qiniu\QiniuSdk;
 
 class Bucket extends Base
@@ -61,7 +61,7 @@ class Bucket extends Base
      */
     public function read($id)
     {
-        $validate = new ValidateRead();
+        $validate = new Read();
         //参数验证
         if(!$validate->check(input(''))){
             return self::returnMsg(401,$validate->getError());

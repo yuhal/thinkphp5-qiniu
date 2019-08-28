@@ -1,19 +1,19 @@
 <?php
-namespace app\api\validate;
+namespace app\api\validate\face;
 
 use think\Validate;
 /**
  * 生成token参数验证器
  */
-class SaveFace extends Validate
+class Read extends Validate
 {
 
     protected $rule = [
-        'id'       =>  'require',
         'uri'       =>  'require',
+        'groups'       =>  'require',
     ];
     protected $message  =   [
-        'id.require'    => 'id不能为空',
         'uri.require'    => 'uri不能为空',
+        'groups.require'    => 'groups不能为空',
     ];
 }

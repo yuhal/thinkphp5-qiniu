@@ -1,19 +1,17 @@
 <?php
-namespace app\api\validate;
+namespace app\api\validate\bucket;
 
 use think\Validate;
 /**
  * 生成token参数验证器
  */
-class ReadFace extends Validate
+class Update extends Validate
 {
 
     protected $rule = [
         'uri'       =>  'require',
-        'groups'       =>  'require',
     ];
     protected $message  =   [
         'uri.require'    => 'uri不能为空',
-        'groups.require'    => 'groups不能为空',
     ];
 }
