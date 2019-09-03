@@ -58,7 +58,7 @@ class File
         $destination = $this->getMasterLogFile();
 
         $path = dirname($destination);
-        !is_dir($path) && mkdir($path, 0755, true);
+        !is_dir($path) && mkdir($path, 0775, true);
 
         $info = [];
 
