@@ -15,11 +15,11 @@ return [
     // 服务器地址
     'hostname'        => '118.31.23.98',
     // 数据库名
-    'database'        => 'blog',
+    'database'        => 'api',
     // 用户名
-    'username'        => 'root',
+    'username'        => 'HaI',
     // 密码
-    'password'        => '0507.HaI',
+    'password'        => '123456',
     // 端口
     'hostport'        => '3306',
     // 连接dsn
