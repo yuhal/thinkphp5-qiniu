@@ -15,7 +15,7 @@ return [
     // 服务器地址
     'hostname'        => '118.31.23.98',
     // 数据库名
-    'database'        => 'api',
+    'database'        => 'apl',
     // 用户名
     'username'        => 'HaI',
     // 密码
