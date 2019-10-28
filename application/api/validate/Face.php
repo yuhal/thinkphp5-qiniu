@@ -7,7 +7,6 @@ use think\Validate;
  */
 class Face extends Validate
 {
-
     protected $rule = [
         'uri'       =>  'require',
         'groups'       =>  'require',
