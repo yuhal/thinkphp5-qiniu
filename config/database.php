@@ -13,7 +13,7 @@ return [
     // 数据库类型
     'type'            => 'mysql',
     // 服务器地址
-    'hostname'        => 'api.yuhal.com',
+    'hostname'        => '47.98.220.126',
     // 数据库名
     'database'        => 'apl',
     // 用户名
@@ -23,7 +23,7 @@ return [
     // 端口
     'hostport'        => '3306',
     // 连接dsn
-    'dsn'             => 'mysql:dbname=apl;host=api.yuhal.com;port=3306',
+    'dsn'             => 'mysql:dbname=apl;host=127.0.0.1;port=3306',
     // 数据库连接参数
     'params'          => [],
     // 数据库编码默认采用utf8
