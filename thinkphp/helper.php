@@ -116,7 +116,6 @@ if (!function_exists('cache')) {
      */
     function cache($name, $value = '', $options = null, $tag = null)
     {
-
         if (is_array($options)) {
             // 缓存操作的同时初始化
             Cache::connect($options);

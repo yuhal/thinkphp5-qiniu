@@ -14,10 +14,6 @@ namespace think;
 use think\exception\ValidateException;
 use traits\controller\Jump;
 
-//主要为跨域CORS配置的两大基本信息,Origin和headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authentication');
-
 class Controller
 {
     use Jump;
