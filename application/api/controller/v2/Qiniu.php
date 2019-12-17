@@ -7,7 +7,7 @@ use Qiniu\Http\Client;
 use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
 
-class Qiniu extends Base
+class Qiniu 
 {
     /**
      * 构造方法
