@@ -2,6 +2,7 @@
 
 namespace app\api\controller\v2;
 
+use think\Controller;
 use Qiniu\Auth;
 use Qiniu\Http\Client;
 use Qiniu\Storage\UploadManager;
