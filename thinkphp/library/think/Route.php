@@ -677,6 +677,7 @@ class Route
      */
     public function controller($rule, $route = '', array $option = [], array $pattern = [])
     {
+        // echo $rule;exit;
         $group = new RuleGroup($this, $this->group, $rule, null, $option, $pattern);
 
         foreach ($this->methodPrefix as $type => $val) {

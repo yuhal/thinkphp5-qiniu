@@ -15,30 +15,28 @@ Route::resource(':version/user','api/:version.user');       //资源路由
 Route::post(':version/user','api/:version.user/index');
 Route::post(':version/token/token','api/:version.token/token');  //生成access_token
 Route::post(':version/token/refresh','api/:version.token/refresh');  //刷新access_token
-//Route::resource(':version/token','api/:version.token/refresh');
+// Route::resource(':version/token','api/:version.token/refresh');
 
 
 
 
-//查询Apiuser
+// 查询Apiuser
 Route::resource(':version/apiuser','api/:version.apiuser');       //资源路由
-//Route::get(':version/apiuser','api/:version.apiuser/index');       //apiuser用户
+// Route::get(':version/apiuser','api/:version.apiuser/index');       //apiuser用户
 Route::post(':version/apiuser/save','api/:version.apiuser/save');       //添加用户
 
 
-//获取authentication
+// 获取authentication
 Route::resource(':version/authentication/index', 'api/:version.Authentication');
-//获取sign
+// 获取sign
 Route::resource(':version/sign/index', 'api/:version.Sign');
-//所有路由匹配不到情况下触发该路由
+// 所有路由匹配不到情况下触发该路由
 Route::miss('\app\api\controller\Exception::miss');
 
-//Route::resource(':version/news/data','api/:version.News');
+// Route::resource(':version/news/data','api/:version.News');
 Route::resource(':version/news','api/:version.News');
 Route::resource(':version/file','api/:version.File');
 Route::resource(':version/bucket','api/:version.Bucket')->pattern(['id' => '[\w-]+']);
 Route::resource(':version/face','api/:version.Face');
 
-Route::get(':version/index','api/:version.qiniu/index'){
-	echo 11;exit;
-};
+Route::get(':version/listFile/:bucket','api/:version.qiniu/listFile');

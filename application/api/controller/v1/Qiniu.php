@@ -1,68 +1,48 @@
 <?php
 
-namespace app\api\controller\v2;
+namespace app\api\controller\v1;
 
 use think\Controller;
+use think\Request;
+use app\api\controller\Send;
+use app\api\controller\Api;
 use Qiniu\Auth;
 use Qiniu\Http\Client;
 use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
+use app\api\validate\Qiniu as Validate;
 
-class Qiniu 
+class Qiniu extends Api
 {
+	protected $sdk_info;
+
     /**
      * 构造方法
      * @param Request $request Request对象
      */
     public function __construct(Request $request){
         parent::__construct($request);
-        $this->Validate = new Validate();
-    }
-    /**
-     * 显示资源列表
-     *
-     * @return \think\Response
-     */
-    public function index()
-    {
-        echo 'index';
+        $this->sdk_info = config('qiniu.');
+		$this->Auth = new Auth($this->sdk_info['accessKey'],$this->sdk_info['secretKey']);
+		$this->Client = new Client();
+		$this->uploadMgr = new UploadManager();
+		$this->bucketMgr = new BucketManager($this->Auth);
+		$this->Validate = new Validate();
     }
 
     /**
-     * 显示创建资源表单页.
+     * 获取仓库下的文件
      *
+     * @param  string  $bucket 
      * @return \think\Response
      */
-    public function create()
-    {
-        echo "create";
-    }
-
-    /**
-     * 保存新建的资源
-     *
-     * @param  \think\Request  $request
-     * @return \think\Response
-     */
-    public function save(Request $request)
-    {
-        dump($this->uid);
-        echo "save";
-    }
-
-    /**
-     * 显示指定的资源
-     *
-     * @param  string  $id
-     * @return \think\Response
-     */
-    public function read($id)
+    public function listFile($bucket)
     {
         //参数验证
-        if(!$this->Validate->scene(request()->action())->check(input('get.'))){
+        if(!$this->Validate->scene(request()->action())->check(input(''))){
             return self::returnMsg(401,$this->Validate->getError());
         }
-        $config = array_merge(config('qiniu.'),['bucket'=>$id]);
+        $config = array_merge(config('qiniu.'),['bucket'=>$bucket]);
         $qiniuSdk = new QiniuSdk($config);
         // 列出该用户下所有的仓库
         $arguments['shared'] = $config['shared'];
@@ -114,18 +94,7 @@ class Qiniu
     }
 
     /**
-     * 显示编辑资源表单页.
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function edit($id)
-    {
-        echo "edit";
-    }
-
-    /**
-     * 保存更新的资源
+     * 更新仓库下的文件
      *
      * @param  \think\Request  $request
      * @param  int  $id
@@ -169,17 +138,6 @@ class Qiniu
             return self::returnMsg(500,'fail','图片解析失败');
         }
         
-    }
-
-    /**
-     * 删除指定资源
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function delete($id)
-    {
-        echo "delete";
     }
     
 }
