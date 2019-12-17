@@ -39,3 +39,4 @@ Route::resource(':version/file','api/:version.File');
 Route::resource(':version/bucket','api/:version.Bucket')->pattern(['id' => '[\w-]+']);
 Route::resource(':version/face','api/:version.Face');
 
+Route::get(':version/index','api/:version.Qiniu/index');
