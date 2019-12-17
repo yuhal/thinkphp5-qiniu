@@ -21,5 +21,5 @@ return [
     // 七牛账号
     'shared'              => '15736736889@163.com',
     // 默认仓库
-    'bucket'              => 'yuhal-picture',
+    'bucket'              => 'yuhal-image',
 ];
