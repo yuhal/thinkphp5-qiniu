@@ -40,7 +40,7 @@ class Qiniu extends Api
     }
 
     /**
-     * 获取仓库下的文件
+     * 获取指定空间的文件列表
      *
      * @param  string  $bucket
      * @return \think\Response
@@ -49,13 +49,13 @@ class Qiniu extends Api
     {
         //参数验证
         if (!$this->validate->sceneListFiles()->check(input(''))) {
-            return self::returnMsg(401, $this->Validate->getError());
+            return self::returnMsg(401, $this->validate->getError());
         }
 
-        // 列出该用户下所有的仓库
+        // 列出该用户下所有的空间
         $buckets = $this->bucketMgr->buckets($this->qiniuConfig['shared']);
         if (!in_array($bucket, $buckets[0])) {
-            self::returnMsg(401, '该仓库不存在！');
+            self::returnMsg(404, '该空间不存在！');
         }
 
         // 要列取文件的公共前缀
@@ -110,7 +110,7 @@ class Qiniu extends Api
     }
 
     /**
-     * 更新仓库下的文件
+     * 更新空间下的文件
      *
      * @param  \think\Request  $request
      * @param  int  $id
@@ -119,8 +119,8 @@ class Qiniu extends Api
     public function update(Request $request, $id)
     {
         //参数验证
-        if (!$this->Validate->scene(request()->action())->check(input('put.'))) {
-            return self::returnMsg(401, $this->Validate->getError());
+        if (!$this->validate->scene(request()->action())->check(input('put.'))) {
+            return self::returnMsg(401, $this->validate->getError());
         }
         $config = array_merge(config('qiniu.'), ['bucket'=>$id]);
         $qiniuSdk = new QiniuSdk($config);
@@ -156,6 +156,45 @@ class Qiniu extends Api
     }
 
     /**
+     *批量移动或重命名 文件
+     *
+     * @return \think\Response
+     */
+    public function buildBatchMove()
+    {
+        //参数验证
+        if (!$this->validate->sceneBuildBatchMove()->check(input(''))) {
+            return self::returnMsg(401, $this->validate->getError());
+        }
+
+        // 列出该用户下所有的空间
+        $buckets = $this->bucketMgr->buckets($this->qiniuConfig['shared']);
+        if (!in_array(input('source_bucket'), $buckets[0])) {
+            self::returnMsg(404, '原空间不存在！');
+        }
+        if (!in_array(input('target_bucket'), $buckets[0])) {
+            self::returnMsg(404, '目标空间不存在！');
+        }
+
+        // 列出原空间的文件列表
+        $listFiles = $this->bucketMgr->listFiles(input('source_bucket'));
+        if (isset($listFiles[0]['items'])) {
+            $keys = array_column($listFiles[0]['items'], 'key');
+            $keyPairs = array();
+            foreach ($keys as $key) {
+                $keyPairs[$key] = $key;
+            }
+        }
+        $ops = $this->bucketMgr->buildBatchMove(input('source_bucket'), $keyPairs, input('target_bucket'), true);
+        list($ret, $err) = $this->bucketMgr->batch($ops);
+        if ($err) {
+            return self::returnMsg(500, 'fail', '批量操作失败');
+        } else {
+            return self::returnMsg(200, 'success', '批量操作成功');
+        }
+    }
+
+    /**
      * 析构方法
      * @param Request $request Request对象
      */
@@ -166,6 +205,6 @@ class Qiniu extends Api
         $this->Client = null;
         $this->uploadMgr = null;
         $this->bucketMgr = null;
-        $this->Validate = null;
+        $this->validate = null;
     }
 }

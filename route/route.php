@@ -39,6 +39,9 @@ Route::resource(':version/file','api/:version.File');
 Route::resource(':version/bucket','api/:version.Bucket')->pattern(['id' => '[\w-]+']);
 Route::resource(':version/face','api/:version.Face');
 
-// 获取单个七牛仓库的文件列表
+// 获取指定空间的文件列表
 Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern(['bucket' => '[\w-]+']);
+
+// 批量移动或重命名文件
+Route::put(':version/buildBatchMove','api/:version.qiniu/buildBatchMove');
 
