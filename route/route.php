@@ -39,4 +39,8 @@ Route::resource(':version/file','api/:version.File');
 Route::resource(':version/bucket','api/:version.Bucket')->pattern(['id' => '[\w-]+']);
 Route::resource(':version/face','api/:version.Face');
 
+<<<<<<< HEAD
 Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern(['bucket' => '[\w-]+']);
+=======
+Route::get(':version/listFile/:bucket','api/:version.qiniu/listFile');
+>>>>>>> baf5a48637d8179d8b9881c3ba1f8ea1eb9c71cc

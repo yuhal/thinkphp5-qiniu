@@ -14,15 +14,7 @@ use app\api\validate\Qiniu as Validate;
 
 class Qiniu extends Api
 {
-	protected $qiniuConfig = null;
-
-    protected $auth = null;
-
-    protected $client = null;
-
-    protected $uploadMgr = null;
-
-    protected $bucketMgr = null;
+	protected $sdk_info;
 
     /**
      * 构造方法
@@ -30,12 +22,12 @@ class Qiniu extends Api
      */
     public function __construct(Request $request){
         parent::__construct($request);
-        $this->qiniuConfig = config('qiniu.');
-		$this->auth = new Auth($this->qiniuConfig['accessKey'],$this->qiniuConfig['secretKey']);
-		$this->client = new Client();
+        $this->sdk_info = config('qiniu.');
+		$this->Auth = new Auth($this->sdk_info['accessKey'],$this->sdk_info['secretKey']);
+		$this->Client = new Client();
 		$this->uploadMgr = new UploadManager();
-		$this->bucketMgr = new BucketManager($this->auth);
-		$this->validate = new Validate();
+		$this->bucketMgr = new BucketManager($this->Auth);
+		$this->Validate = new Validate();
     }
 
     /**
@@ -44,19 +36,20 @@ class Qiniu extends Api
      * @param  string  $bucket 
      * @return \think\Response
      */
-    public function listFiles($bucket)
+    public function listFile($bucket)
     {
         //参数验证
-        if(!$this->validate->sceneListFiles()->check(input(''))){
+        if(!$this->Validate->scene(request()->action())->check(input(''))){
             return self::returnMsg(401,$this->Validate->getError());
         }
-
+        $config = array_merge(config('qiniu.'),['bucket'=>$bucket]);
+        $qiniuSdk = new QiniuSdk($config);
         // 列出该用户下所有的仓库
-        $buckets = $this->bucketMgr->buckets($this->qiniuConfig['shared']);
-        if(!in_array($bucket, $buckets[0])){
+        $arguments['shared'] = $config['shared'];
+        $buckets = $qiniuSdk->buckets();
+        if(!in_array($id, $buckets[0])){
             self::returnMsg(401, '该仓库不存在！');
         }
-
         // 要列取文件的公共前缀
         $arguments['prefix'] = '';
         if(input('prefix')) $arguments['prefix'] = input('prefix');
@@ -73,7 +66,7 @@ class Qiniu extends Api
         $chcheKey = md5(json_encode($arguments));
         $listFiles = cache('BucketReadListFiles_'.$chcheKey);
         if(!$listFiles){
-            $listFiles = $this->bucketMgr->listFiles($bucket,$arguments['prefix'],$arguments['marker'],$arguments['limit'],$arguments['delimiter']);
+            $listFiles = $qiniuSdk->listFiles($arguments);
             cache('BucketReadListFiles_'.$chcheKey, $listFiles, 3600*24);
         }
         if(isset($listFiles[0]['items'])){
@@ -145,19 +138,6 @@ class Qiniu extends Api
             return self::returnMsg(500,'fail','图片解析失败');
         }
         
-    }
-
-    /**
-     * 析构方法
-     * @param Request $request Request对象
-     */
-    public function __destruct(){
-        $this->sdk_info = null;
-        $this->Auth = null;
-        $this->Client = null;
-        $this->uploadMgr = null;
-        $this->bucketMgr = null;
-        $this->Validate = null;
     }
     
 }

@@ -19,6 +19,7 @@ class Qiniu extends Validate
         'uri.require'    => 'uri不能为空',
     ];
 
+<<<<<<< HEAD
     // protected $scene = [
     //     'edit'  =>  ['limit'],
     //     'update'  =>  ['uri'],
@@ -29,4 +30,10 @@ class Qiniu extends Validate
     {
         return $this->only(['limit']);
     }  
+=======
+    protected $scene = [
+        'read'  =>  ['limit'],
+        'update'  =>  ['uri'],
+    ];
+>>>>>>> baf5a48637d8179d8b9881c3ba1f8ea1eb9c71cc
 }
