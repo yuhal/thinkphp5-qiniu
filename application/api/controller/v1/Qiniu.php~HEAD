@@ -14,7 +14,6 @@ use app\api\validate\Qiniu as Validate;
 
 class Qiniu extends Api
 {
-<<<<<<< HEAD
 	protected $qiniuConfig = null;
 
     protected $auth = null;
@@ -24,44 +23,30 @@ class Qiniu extends Api
     protected $uploadMgr = null;
 
     protected $bucketMgr = null;
-=======
-    protected $sdk_info;
->>>>>>> 1c66084c165e2af191ad403b9a786af1dd651098
 
     /**
      * 构造方法
      * @param Request $request Request对象
      */
-    public function __construct(Request $request)
-    {
+    public function __construct(Request $request){
         parent::__construct($request);
-<<<<<<< HEAD
         $this->qiniuConfig = config('qiniu.');
 		$this->auth = new Auth($this->qiniuConfig['accessKey'],$this->qiniuConfig['secretKey']);
 		$this->client = new Client();
 		$this->uploadMgr = new UploadManager();
 		$this->bucketMgr = new BucketManager($this->auth);
 		$this->validate = new Validate();
-=======
-        $this->sdk_info = config('qiniu.');
-        $this->Auth = new Auth($this->sdk_info['accessKey'], $this->sdk_info['secretKey']);
-        $this->Client = new Client();
-        $this->uploadMgr = new UploadManager();
-        $this->bucketMgr = new BucketManager($this->Auth);
-        $this->Validate = new Validate();
->>>>>>> 1c66084c165e2af191ad403b9a786af1dd651098
     }
 
     /**
-     * 获取单个七牛仓库的文件列表
+     * 获取仓库下的文件
      *
-     * @param  string  $bucket
+     * @param  string  $bucket 
      * @return \think\Response
      */
     public function listFiles($bucket)
     {
         //参数验证
-<<<<<<< HEAD
         if(!$this->validate->sceneListFiles()->check(input(''))){
             return self::returnMsg(401,$this->Validate->getError());
         }
@@ -69,73 +54,49 @@ class Qiniu extends Api
         // 列出该用户下所有的仓库
         $buckets = $this->bucketMgr->buckets($this->qiniuConfig['shared']);
         if(!in_array($bucket, $buckets[0])){
-=======
-        if (!$this->Validate->scene(request()->action())->check(input(''))) {
-            return self::returnMsg(401, $this->Validate->getError());
-        }
-        $config = array_merge(config('qiniu.'), ['bucket'=>$bucket]);
-        $qiniuSdk = new QiniuSdk($config);
-        // 列出该用户下所有的仓库
-        $arguments['shared'] = $config['shared'];
-        $buckets = $qiniuSdk->buckets();
-        if (!in_array($id, $buckets[0])) {
->>>>>>> 1c66084c165e2af191ad403b9a786af1dd651098
             self::returnMsg(401, '该仓库不存在！');
         }
 
         // 要列取文件的公共前缀
         $arguments['prefix'] = '';
-        if (input('prefix')) {
-            $arguments['prefix'] = input('prefix');
-        }
+        if(input('prefix')) $arguments['prefix'] = input('prefix');
         // 上次列举返回的位置标记，作为本次列举的起点信息。
         $arguments['marker'] = '';
-        if (input('marker')) {
-            $arguments['marker'] = input('marker');
-        }
+        if(input('marker')) $arguments['marker'] = input('marker');
         // 本次列举的条目数
         $arguments['limit'] = '';
-        if (input('limit')) {
-            $arguments['limit'] = input('limit');
-        }
+        if(input('limit')) $arguments['limit'] = input('limit');
         // 分隔符
         $arguments['delimiter'] = '';
-        if (input('delimiter')) {
-            $arguments['delimiter'] = input('delimiter');
-        }
+        if(input('delimiter')) $arguments['delimiter'] = input('delimiter');
 
         $chcheKey = md5(json_encode($arguments));
         $listFiles = cache('BucketReadListFiles_'.$chcheKey);
-<<<<<<< HEAD
         if(!$listFiles){
             $listFiles = $this->bucketMgr->listFiles($bucket,$arguments['prefix'],$arguments['marker'],$arguments['limit'],$arguments['delimiter']);
-=======
-        if (!$listFiles) {
-            $listFiles = $qiniuSdk->listFiles($arguments);
->>>>>>> 1c66084c165e2af191ad403b9a786af1dd651098
             cache('BucketReadListFiles_'.$chcheKey, $listFiles, 3600*24);
         }
-        if (isset($listFiles[0]['items'])) {
+        if(isset($listFiles[0]['items'])){
             // 排序
             switch (input('order')) {
                 case 1:
                     // 按照添加时间正序
-                    $items = arraySort($listFiles[0]['items'], 'putTime');
+                    $items = arraySort($listFiles[0]['items'],'putTime');
                     break;
                 case 2:
                     // 按照添加时间倒序
-                    $items = arraySort($listFiles[0]['items'], 'putTime', 'desc');
+                    $items = arraySort($listFiles[0]['items'],'putTime','desc');
                     break;
                 default:
                     // 按照添加时间倒序
-                    $items = arraySort($listFiles[0]['items'], 'putTime', 'desc');
+                    $items = arraySort($listFiles[0]['items'],'putTime','desc');
                     break;
             }
             $listFiles[0]['items'] = arrayKeyAsc($items);
-            return self::returnMsg(200, 'success', $listFiles);
-        } else {
+            return self::returnMsg(200,'success',$listFiles);
+        }else{
             $listFiles = object_to_array($listFiles[1]);
-            return self::returnMsg(500, 'fail', json_decode($listFiles['response']->body, true));
+            return self::returnMsg(500,'fail',json_decode($listFiles['response']->body,true));
         }
     }
 
@@ -149,42 +110,42 @@ class Qiniu extends Api
     public function update(Request $request, $id)
     {
         //参数验证
-        if (!$this->Validate->scene(request()->action())->check(input('put.'))) {
-            return self::returnMsg(401, $this->Validate->getError());
+        if(!$this->Validate->scene(request()->action())->check(input('put.'))){
+            return self::returnMsg(401,$this->Validate->getError());
         }
-        $config = array_merge(config('qiniu.'), ['bucket'=>$id]);
+        $config = array_merge(config('qiniu.'),['bucket'=>$id]);
         $qiniuSdk = new QiniuSdk($config);
         $imgBase64 = input('put.uri');
-        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $imgBase64, $res)) {
-            //获取图片类型
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/',$imgBase64,$res)) {
+            //获取图片类型   
             $type = $res[2];
             //图片保存路径
-            $fileDir = "/mnt/avatar/".date('Ymd', time()).'/';
+            $fileDir = "/mnt/avatar/".date('Ymd',time()).'/';
             if (!file_exists($fileDir)) {
-                mkdir($fileDir, 0777, true);
+               mkdir($fileDir,0777,true);
             }
             $fileName = $id.'-'.time().'.'.$type;
             $filePath = $fileDir.$fileName;
-            if (file_put_contents($filePath, base64_decode(str_replace($res[1], '', $imgBase64)))) {
+            if (file_put_contents($filePath,base64_decode(str_replace($res[1],'', $imgBase64)))) {
                 //图片名字
                 $arguments['file'] = $fileName;
                 $arguments['filepath'] = $filePath;
                 $putFileRe = $qiniuSdk->putFile($arguments);
-                if ($putFileRe) {
+                if($putFileRe){
                     $result['fileName'] = $putFileRe;
                     //删除对应目录的文件
                     unlink($filePath);
-                    return self::returnMsg(200, 'success', $result);
+                    return self::returnMsg(200,'success',$result);
                 }
-                return self::returnMsg(500, 'fail', '图片上传失败');
-            } else {
-                return self::returnMsg(500, 'fail', '图片地址不存在');
+                return self::returnMsg(500,'fail','图片上传失败');
+            }else{
+                return self::returnMsg(500,'fail','图片地址不存在');
             }
-        } else {
-            return self::returnMsg(500, 'fail', '图片解析失败');
+        }else{
+            return self::returnMsg(500,'fail','图片解析失败');
         }
+        
     }
-<<<<<<< HEAD
 
     /**
      * 析构方法
@@ -200,6 +161,3 @@ class Qiniu extends Api
     }
     
 }
-=======
-}
->>>>>>> 1c66084c165e2af191ad403b9a786af1dd651098

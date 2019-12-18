@@ -101,7 +101,7 @@ class ArrayUtil
             $arg.=$key.'='.urldecode($val).'&';
         }
         //去掉最后一个&字符
-        $arg && $arg = rtrim($arg,'&');
+        $arg && $arg = rtrim($arg, '&');
 
         //如果存在转义字符，那么去掉转义
         if (get_magic_quotes_gpc()) {
@@ -111,4 +111,3 @@ class ArrayUtil
         return $arg;
     }
 }
-

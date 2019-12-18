@@ -17,10 +17,6 @@ class User extends Api
      */
     public function index()
     {
-
-
-
-
         $userInfo = ApiuserModel::get(1);
         var_dump($userInfo);
 //        return 'index';

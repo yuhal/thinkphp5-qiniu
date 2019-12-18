@@ -14,7 +14,8 @@ class Mail
     /**
      * 构造方法
      */
-    public function __construct(){
+    public function __construct()
+    {
         $this->PHPMailer = new PHPMailer(true);
     }
 
@@ -26,7 +27,7 @@ class Mail
      * @param string $Body 邮件内容
      * @return \think\Response
      */
-    public function sendEmailReminders($Subject,$Body)
+    public function sendEmailReminders($Subject, $Body)
     {
         try {
             //服务器设置
@@ -43,7 +44,7 @@ class Mail
             $this->PHPMailer->setFrom(config('mail.Username'), config('.Sender'));  // 寄送人邮箱地址，寄送人名称
             $this->PHPMailer->addAddress(config('mail.Email'), config('mail.Receiver'));     // 收件人邮箱地址，收件人名称
             // $this->PHPMailer->addAddress(config('mail.Username'));               // 名称是可选的
-            // $this->PHPMailer->addReplyTo(config('mail.Username'), 'Information');    
+            // $this->PHPMailer->addReplyTo(config('mail.Username'), 'Information');
             // $this->PHPMailer->addCC(config('mail.Username'));   //抄送
             // $this->PHPMailer->addBCC(config('mail.Username'));  //密件抄送，密件副本
 
@@ -64,5 +65,4 @@ class Mail
             return $this->PHPMailer->ErrorInfo;
         }
     }
-
 }

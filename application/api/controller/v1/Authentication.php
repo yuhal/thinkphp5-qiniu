@@ -7,7 +7,6 @@ use app\api\validate\Authentication as validate;
 use think\Controller;
 use think\Request;
 
-
 class Authentication extends Controller
 {
     use Send;
@@ -15,7 +14,8 @@ class Authentication extends Controller
      * 构造方法
      * @param Request $request Request对象
      */
-    public function __construct(){
+    public function __construct()
+    {
         parent::__construct();
         $this->validate = new validate();
     }
@@ -28,15 +28,14 @@ class Authentication extends Controller
     public function index()
     {
         //参数验证
-        if(!$this->validate->check(input(''))){
-            return self::returnMsg(401,$this->validate->getError());
+        if (!$this->validate->check(input(''))) {
+            return self::returnMsg(401, $this->validate->getError());
         }
         $appid = input('appid');
         $uid = input('uid');
         $accesstoken = input('accesstoken');
         $base = $appid.':'.$accesstoken.':'.$uid;
         $opt['authentication'] = $uid." ".base64_encode($base);
-        return self::returnMsg(200,'success',$opt);
+        return self::returnMsg(200, 'success', $opt);
     }
-
 }

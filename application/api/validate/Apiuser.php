@@ -2,12 +2,12 @@
 namespace app\api\validate;
 
 use think\Validate;
+
 /**
  * 生成token参数验证器
  */
 class Apiuser extends Validate
 {
-
     protected $rule = [
         'appid'       =>  'require',
         'mobile'      =>  'mobile|require',
