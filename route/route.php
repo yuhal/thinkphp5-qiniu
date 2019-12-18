@@ -39,4 +39,6 @@ Route::resource(':version/file','api/:version.File');
 Route::resource(':version/bucket','api/:version.Bucket')->pattern(['id' => '[\w-]+']);
 Route::resource(':version/face','api/:version.Face');
 
-Route::get(':version/listFile/:bucket','api/:version.qiniu/listFile');
+// 获取单个七牛仓库的文件列表
+Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern(['bucket' => '[\w-]+']);
+

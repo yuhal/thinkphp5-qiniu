@@ -19,8 +19,14 @@ class Qiniu extends Validate
         'uri.require'    => 'uri不能为空',
     ];
 
-    protected $scene = [
-        'read'  =>  ['limit'],
-        'update'  =>  ['uri'],
-    ];
+    // protected $scene = [
+    //     'edit'  =>  ['limit'],
+    //     'update'  =>  ['uri'],
+    // ];
+
+    // ListFile 验证场景定义
+    public function sceneListFiles()
+    {
+        return $this->only(['limit']);
+    }  
 }
