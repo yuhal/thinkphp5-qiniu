@@ -1,6 +1,7 @@
 <?php
 
 namespace app\api\controller\v1;
+
 use think\Request;
 use think\Controller;
 use app\api\controller\Send;
@@ -33,9 +34,8 @@ class Apiuser extends Controller
 //        mobile appid
         //参数验证
         $validate = new \app\api\validate\Apiuser;
-        if(!$validate->check(input(''))){
-
-            return self::returnMsg(401,$validate->getError());
+        if (!$validate->check(input(''))) {
+            return self::returnMsg(401, $validate->getError());
         }
         self::checkParams(input(''));  //参数校验
         $data['mobile'] =input('mobile');
@@ -50,19 +50,16 @@ class Apiuser extends Controller
             'mobile'  =>$data['mobile'],
             'appsercet'  =>input('appsercet')
         ];
-        return self::returnMsg(200,'success',$userinfo);
+        return self::returnMsg(200, 'success', $userinfo);
     }
     /**
      * 参数检测
      */
     public static function checkParams($params = [])
     {
-        $user = Db::table('api_user')->where('mobile',$params['mobile'])->find();
-        if($user)
-        {
-            return self::returnMsg(401,'手机号已经存在');
+        $user = Db::table('api_user')->where('mobile', $params['mobile'])->find();
+        if ($user) {
+            return self::returnMsg(401, '手机号已经存在');
         }
     }
-
-
 }

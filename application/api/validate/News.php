@@ -2,12 +2,12 @@
 namespace app\api\validate;
 
 use think\Validate;
+
 /**
  * 生成token参数验证器
  */
 class News extends Validate
 {
-
     protected $rule = [
         'cid'       =>  'number|require',
         'img_url'      =>  'require',

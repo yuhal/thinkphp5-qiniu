@@ -12,18 +12,19 @@
 // 应用公共文件
 function isImage($filename)
 {
- $types = ['gif','GIT','jpeg','JPEG','png','PNG','bmp','BMP','jpg','JPG']; //定义检查的图片类型
- $ext = get_extension($filename);
-  if(in_array($ext, $types)){
-    return true;
-  }else{
-    return false;
-  }
+    $types = ['gif','GIT','jpeg','JPEG','png','PNG','bmp','BMP','jpg','JPG']; //定义检查的图片类型
+    $ext = get_extension($filename);
+    if (in_array($ext, $types)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // 获取文件后缀
-function get_extension($file){
-  return substr(strrchr($file, '.'), 1);
+function get_extension($file)
+{
+    return substr(strrchr($file, '.'), 1);
 }
 
 /**
@@ -33,14 +34,15 @@ function get_extension($file){
  * @param $arr2
  * @return array
  */
-function get_diff_array_by_filter($arr1,$arr2){
-	try{
-	    return array_filter($arr1,function($v) use ($arr2){
-	        return !in_array($v,$arr2);
-	    });
-	}catch (\Exception $exception){
-	    return $arr1;
-	}
+function get_diff_array_by_filter($arr1, $arr2)
+{
+    try {
+        return array_filter($arr1, function ($v) use ($arr2) {
+            return !in_array($v, $arr2);
+        });
+    } catch (\Exception $exception) {
+        return $arr1;
+    }
 }
 
 /**
@@ -50,15 +52,16 @@ function get_diff_array_by_filter($arr1,$arr2){
  * @param $type
  * @return array
  */
-function arraySort($arr, $keys, $type = 'asc') {
+function arraySort($arr, $keys, $type = 'asc')
+{
     $keysvalue = $new_array = array();
-    foreach ($arr as $k => $v){
+    foreach ($arr as $k => $v) {
         $keysvalue[$k] = $v[$keys];
     }
     $type == 'asc' ? asort($keysvalue) : arsort($keysvalue);
     reset($keysvalue);
     foreach ($keysvalue as $k => $v) {
-       $new_array[$k] = $arr[$k];
+        $new_array[$k] = $arr[$k];
     }
     return $new_array;
 }
@@ -68,7 +71,8 @@ function arraySort($arr, $keys, $type = 'asc') {
  * @param $object
  * @return array
  */
-function object_to_array($object) {  
+function object_to_array($object)
+{
     $ref = new \ReflectionClass($object);
     $props = $ref->getProperties();
     $array = array();
@@ -85,9 +89,10 @@ function object_to_array($object) {
  * @param $arr
  * @return array
  */
-function arrayKeyAsc($arr){
+function arrayKeyAsc($arr)
+{
     $new_array = array();
-    if($arr){
+    if ($arr) {
         foreach ($arr as $key => $value) {
             $new_array[] = $value;
         }

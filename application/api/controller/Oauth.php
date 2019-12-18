@@ -33,9 +33,8 @@ class Oauth
      * @return \Exception|UnauthorizedException|mixed|Exception
      * @throws UnauthorizedException
      */
-    final function authenticate()
+    final public function authenticate()
     {
-
         return self::certification(self::getClient());
     }
 
@@ -46,7 +45,7 @@ class Oauth
      * @throws UnauthorizedException
      */
     public static function getClient()
-    {   
+    {
 
         //获取头部信息
         try {
@@ -59,7 +58,7 @@ class Oauth
 
             return $clientInfo;
         } catch (Exception $e) {
-            return self::returnMsg(401,'Invalid authorization credentials',Request::header(''));
+            return self::returnMsg(401, 'Invalid authorization credentials', Request::header(''));
         }
     }
 
@@ -67,17 +66,15 @@ class Oauth
      * 获取用户信息后 验证权限
      * @return mixed
      */
-    public static function certification($data = []){
-
-
+    public static function certification($data = [])
+    {
         $getCacheAccessToken = Cache::get(self::$accessTokenPrefix . $data['access_token']);  //获取缓存access_token
 
-        if(!$getCacheAccessToken){
-            return self::returnMsg(401,'fail',"access_token不存在或为空");
+        if (!$getCacheAccessToken) {
+            return self::returnMsg(401, 'fail', "access_token不存在或为空");
         }
-        if($getCacheAccessToken['client']['appid'] !== $data['appid']){
-
-            return self::returnMsg(401,'fail',"appid错误");  //appid与缓存中的appid不匹配
+        if ($getCacheAccessToken['client']['appid'] !== $data['appid']) {
+            return self::returnMsg(401, 'fail', "appid错误");  //appid与缓存中的appid不匹配
         }
         return $data;
     }
@@ -86,21 +83,20 @@ class Oauth
      * 生成签名
      * _字符开头的变量不参与签名
      */
-    public static function makeSign ($data = [],$app_secret = '')
-    {   
+    public static function makeSign($data = [], $app_secret = '')
+    {
         unset($data['version']);
         unset($data['sign']);
-        return self::_getOrderMd5($data,$app_secret);
+        return self::_getOrderMd5($data, $app_secret);
     }
 
     /**
      * 计算ORDER的MD5签名
      */
-    private static function _getOrderMd5($params = [] , $app_secret = '') {
+    private static function _getOrderMd5($params = [], $app_secret = '')
+    {
         ksort($params);
         $params['key'] = $app_secret;
         return strtolower(md5(urldecode(http_build_query($params))));
     }
-
-    
 }

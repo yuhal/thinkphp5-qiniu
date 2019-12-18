@@ -16,98 +16,96 @@ header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Ac
  */
 class Token
 {
-	use Send;
+    use Send;
 
-	/**
-	 * 请求时间差
-	 */
-	public static $timeDif = 10000;
+    /**
+     * 请求时间差
+     */
+    public static $timeDif = 10000;
 
-	public static $accessTokenPrefix = 'accessToken_';
-	public static $refreshAccessTokenPrefix = 'refreshAccessToken_';
-	public static $expires = 7200;
-	public static $refreshExpires = 60*60*24*30;   //刷新token过期时间
-	/**
-	 * 测试appid，正式请数据库进行相关验证
-	 */
-	public static $appid;
-	/**
-	 * appsercet
-	 */
-	public static $appsercet;
+    public static $accessTokenPrefix = 'accessToken_';
+    public static $refreshAccessTokenPrefix = 'refreshAccessToken_';
+    public static $expires = 7200;
+    public static $refreshExpires = 60*60*24*30;   //刷新token过期时间
+    /**
+     * 测试appid，正式请数据库进行相关验证
+     */
+    public static $appid;
+    /**
+     * appsercet
+     */
+    public static $appsercet;
 
-	/**
-	 * 生成token
-	 */
-	public function token(Request $request)
-	{
-		//参数验证
-		$validate = new \app\api\validate\Token;
-		if(!$validate->check(input(''))){
+    /**
+     * 生成token
+     */
+    public function token(Request $request)
+    {
+        //参数验证
+        $validate = new \app\api\validate\Token;
+        if (!$validate->check(input(''))) {
+            return self::returnMsg(401, $validate->getError());
+        }
+        self::checkParams(input(''));  //参数校验
+        $user = Db::table('api_user')->where('mobile', input('mobile'))->find();
+        $userInfo = [
+            'uid'   => $user['id'],
+            'mobile'=> input('mobile')
+        ];
+        try {
+            $accessToken = self::setAccessToken(array_merge($userInfo, input('')));  //传入参数应该是根据手机号查询改用户的数据
+            return self::returnMsg(200, 'success', $accessToken);
+        } catch (Exception $e) {
+            return self::returnMsg(500, 'fail', $e);
+        }
+    }
 
-			return self::returnMsg(401,$validate->getError());
-		}
-		self::checkParams(input(''));  //参数校验
-		$user = Db::table('api_user')->where('mobile',input('mobile'))->find();
-		$userInfo = [
-			'uid'   => $user['id'],
-			'mobile'=> input('mobile')
-		];
-		try {
-			$accessToken = self::setAccessToken(array_merge($userInfo,input('')));  //传入参数应该是根据手机号查询改用户的数据
-			return self::returnMsg(200,'success',$accessToken);
-		} catch (Exception $e) {
-			return self::returnMsg(500,'fail',$e);
-		}
-	}
+    /**
+     * 刷新token
+     */
+    public function refresh($refresh_token='', $appid = '')
+    {
+        $cache_refresh_token = Cache::get(self::$refreshAccessTokenPrefix.$appid);  //查看刷新token是否存在
+        if (!$cache_refresh_token) {
+            return self::returnMsg(401, 'fail', 'refresh_token is null');
+        } else {
+            if ($cache_refresh_token !== $refresh_token) {
+                return self::returnMsg(401, 'fail', 'refresh_token is error');
+            } else {    //重新给用户生成调用token
+                $data['appid'] = $appid;
+                $accessToken = self::setAccessToken($data);
+                return self::returnMsg(200, 'success', $accessToken);
+            }
+        }
+    }
 
-	/**
-	 * 刷新token
-	 */
-	public function refresh($refresh_token='',$appid = '')
-	{
-		$cache_refresh_token = Cache::get(self::$refreshAccessTokenPrefix.$appid);  //查看刷新token是否存在
-		if(!$cache_refresh_token){
-			return self::returnMsg(401,'fail','refresh_token is null');
-		}else{
-			if($cache_refresh_token !== $refresh_token){
-				return self::returnMsg(401,'fail','refresh_token is error');
-			}else{    //重新给用户生成调用token
-				$data['appid'] = $appid;
-				$accessToken = self::setAccessToken($data); 
-				return self::returnMsg(200,'success',$accessToken);
-			}
-		}
-	}
+    /**
+     * 参数检测
+     */
+    public static function checkParams($params = [])
+    {
+        //时间戳校验
+        if (abs($params['timestamp'] - time()) > self::$timeDif) {
+            return self::returnMsg(401, '请求时间戳与服务器时间戳异常', 'timestamp：'.time());
+        }
+        $user = Db::table('api_user')->where('mobile', $params['mobile'])->find();
+        if (!$user) {
+            return self::returnMsg(401, '手机号不存在！');
+        } else {
+            //appid检测，这里是在本地进行测试，正式的应该是查找数据库或者redis进行验证
+            if ($params['appid'] != $user['appid']) {
+                return self::returnMsg(401, 'appid 不存在！');
+            }
+            self::$appsercet = $user['appsercet'];
+        }
+        //签名检测
+        $sign = Oauth::makeSign($params, self::$appsercet);
+        if ($sign !== $params['sign']) {
+            return self::returnMsg(401, 'sign错误', 'sign：'.$sign);
+        }
+    }
 
-	/**
-	 * 参数检测
-	 */
-	public static function checkParams($params = [])
-	{	
-		//时间戳校验
-		if(abs($params['timestamp'] - time()) > self::$timeDif){
-
-			return self::returnMsg(401,'请求时间戳与服务器时间戳异常','timestamp：'.time());
-		}
-		$user = Db::table('api_user')->where('mobile',$params['mobile'])->find();
-		if(!$user){
-			return self::returnMsg(401,'手机号不存在！');
-		}else{
-			//appid检测，这里是在本地进行测试，正式的应该是查找数据库或者redis进行验证
-			if($params['appid'] != $user['appid']){
-				return self::returnMsg(401,'appid 不存在！');
-			}
-			self::$appsercet = $user['appsercet'];
-		}
-		//签名检测
-		$sign = Oauth::makeSign($params,self::$appsercet);
-		if($sign !== $params['sign']){
-			return self::returnMsg(401,'sign错误','sign：'.$sign);
-		}
-	}
-
-	/**
+    /**
      * 设置AccessToken
      * @param $clientInfo
      * @return int
@@ -125,7 +123,7 @@ class Token
             'client'        => $clientInfo,//用户信息
         ];
         self::saveAccessToken($accessToken, $accessTokenInfo);  //保存本次token
-        self::saveRefreshToken($refresh_token,$clientInfo['appid']);
+        self::saveRefreshToken($refresh_token, $clientInfo['appid']);
         return $accessTokenInfo;
     }
 
@@ -134,7 +132,7 @@ class Token
      */
     public static function getRefreshToken($appid = '')
     {
-    	return Cache::get(self::$refreshAccessTokenPrefix.$appid) ? Cache::get(self::$refreshAccessTokenPrefix.$appid) : self::buildAccessToken(); 
+        return Cache::get(self::$refreshAccessTokenPrefix.$appid) ? Cache::get(self::$refreshAccessTokenPrefix.$appid) : self::buildAccessToken();
     }
 
     /**
@@ -145,8 +143,7 @@ class Token
     {
         //生成AccessToken
         $str_pol = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789abcdefghijklmnopqrstuvwxyz";
-		return substr(str_shuffle($str_pol), 0, $lenght);
-
+        return substr(str_shuffle($str_pol), 0, $lenght);
     }
 
     /**
@@ -165,10 +162,9 @@ class Token
      * @param $accessToken
      * @param $accessTokenInfo
      */
-    protected static function saveRefreshToken($refresh_token,$appid)
+    protected static function saveRefreshToken($refresh_token, $appid)
     {
         //存储RefreshToken
-        cache(self::$refreshAccessTokenPrefix.$appid,$refresh_token,self::$refreshExpires);
+        cache(self::$refreshAccessTokenPrefix.$appid, $refresh_token, self::$refreshExpires);
     }
-
 }
