@@ -47,7 +47,7 @@ class Qiniu extends Api
      */
     public function listFiles($bucket)
     {
-        //参数验证
+        // 参数验证
         if (!$this->validate->sceneListFiles()->check(input(''))) {
             return self::returnMsg(401, $this->validate->getError());
         }
@@ -156,7 +156,7 @@ class Qiniu extends Api
     }
 
     /**
-     *批量移动或重命名 文件
+     * 批量移动或重命名文件
      *
      * @return \think\Response
      */
