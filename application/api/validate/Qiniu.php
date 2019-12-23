@@ -15,23 +15,43 @@ class Qiniu extends Validate
         'target_bucket'       =>  'require',
         'limit'       =>  'number|min:1',
         'uri'       =>  'require',
+        'oldname'   =>  'require',
+        'newname'   =>  'require',
+        'key'       =>  'require',
+        'from_bucket'       =>  'require',
+        'from_key'       =>  'require',
+        'to_bucket'       =>  'require',
+        'to_key'       =>  'require',
     ];
 
     protected $message  =   [
-        'bucket.require'    => 'bucket 不能为空',
-        'source_bucket.require'    => 'source_bucket 不能为空',
-        'key_pairs.require'    => 'key_pairs 不能为空',
-        'target_bucket.require'    => 'target_bucket 不能为空',
-        'uri.require'    => 'uri 不能为空',
+        
     ];
+
+    public function sceneBuildBatchMove()
+    {
+        return $this->only(['source_bucket','target_bucket']);
+    }
+
+    public function sceneRename()
+    {
+        return $this->only(['bucket','oldname','newname']);
+    }
+
+    public function sceneDelete()
+    {
+        return $this->only(['bucket','key']);
+    }
 
     public function sceneListFiles()
     {
         return $this->only(['limit']);
     }
 
-    public function sceneBuildBatchMove()
+    public function sceneMove()
     {
-        return $this->only(['source_bucket','target_bucket']);
+        return $this->only(['from_bucket','from_key','to_bucket','to_key']);
     }
+
+    
 }

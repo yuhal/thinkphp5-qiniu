@@ -39,9 +39,25 @@ Route::resource(':version/file','api/:version.File');
 Route::resource(':version/bucket','api/:version.Bucket')->pattern(['id' => '[\w-]+']);
 Route::resource(':version/face','api/:version.Face');
 
-// 获取指定空间的文件列表
-Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern(['bucket' => '[\w-]+']);
+// 获取指定账号下所有的空间名。
+Route::get(':version/buckets','api/:version.qiniu/buckets');
 
 // 批量移动或重命名文件
 Route::put(':version/buildBatchMove','api/:version.qiniu/buildBatchMove');
+
+// 获取指定空间绑定的所有的域名
+Route::get(':version/domains/:bucket','api/:version.qiniu/domains')->pattern(['bucket' => '[\w-]+']);
+
+// 删除指定资源
+Route::delete(':version/delete','api/:version.qiniu/delete');
+
+// 给资源进行重命名
+Route::put(':version/rename','api/:version.qiniu/rename');
+
+// 获取指定空间的文件列表
+Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern(['bucket' => '[\w-]+']);
+
+// 将资源从一个空间到另一个空间
+Route::put(':version/move','api/:version.qiniu/move');
+
 
