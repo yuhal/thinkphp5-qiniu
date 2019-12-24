@@ -7,11 +7,11 @@ use think\Db;
 use think\Request;
 use think\Cache;
 use app\api\controller\Send;
-use app\api\controller\Base;
+use app\api\controller\Api;
 use app\api\validate\Bucket as Validate;
 use qiniu\QiniuSdk;
 
-class Bucket extends Base
+class Bucket extends Api
 {
     /**
      * 构造方法

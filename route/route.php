@@ -54,13 +54,16 @@ Route::delete(':version/delete','api/:version.qiniu/delete');
 // 给资源进行重命名
 Route::put(':version/rename','api/:version.qiniu/rename');
 
+// 测试资源路由
+Route::resource(':version/test','api/:version.Test');
+
 // 获取指定空间的文件列表
 Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern(['bucket' => '[\w-]+']);
 
 // 将资源从一个空间到另一个空间
 Route::put(':version/move','api/:version.qiniu/move');
 
-// 新建图像库
+// 图像库资源路由
 Route::resource(':version/image','api/:version.Image');
 
 

@@ -108,9 +108,9 @@ function arrayKeyAsc($arr)
  * @param $url
  * @return array
  */
-function qiniuGet($url, $data=null){
-    if($data){
-        $url = $url.'?'.http_build_query($data);
+function qiniuGet($url, $arr=null){
+    if($arr){
+        $url = $url.'?'.http_build_query($arr);
     }
     $auth = new Auth(config('qiniu.accessKey'), config('qiniu.secretKey'));
     $method = "GET";
@@ -127,7 +127,7 @@ function qiniuGet($url, $data=null){
  * @param $arr
  * @return array
  */
-function qiniuPost($url, $arr){
+function qiniuPost($url, $arr=null){
     $auth = new Auth(config('qiniu.accessKey'), config('qiniu.secretKey'));
     $method = "POST";
     $host = "ai.qiniuapi.com";

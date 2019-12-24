@@ -14,7 +14,7 @@ use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
 use app\api\validate\v2\Image as Validate;
 
-class Image extends Api
+class Test extends Api
 {
 
     /**

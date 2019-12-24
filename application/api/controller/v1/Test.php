@@ -14,7 +14,7 @@ use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
 use app\api\validate\v1\Image as Validate;
 
-class Image extends Api
+class Test extends Api
 {
 
     /**
@@ -36,7 +36,7 @@ class Image extends Api
      */
     public function delete($id)
     {
-        // 列出该用户下所有的图像库
+    	// 列出该用户下所有的图像库
         $url = "http://ai.qiniuapi.com/v1/image/group";
         $group = qiniuGet($url);
         if (!in_array($id, $group['result'])) {
@@ -86,14 +86,14 @@ class Image extends Api
         $url = "http://ai.qiniuapi.com/v1/image/group/".input('group_id')."/new";
         $arr = [];
         foreach (input('uri') as $k => $v) {
-            $arr['data'][$k]['uri'] = $v;
-            if(is_array(input('attribute'))){
-                foreach (input('attribute') as $k2 => $v2) {
-                    if ($k == $k2) {
-                        $arr['data'][$k]['attribute'] = $v2;
-                    }
-                }   
-            }
+        	$arr['data'][$k]['uri'] = $v;
+        	if(is_array(input('attribute'))){
+        		foreach (input('attribute') as $k2 => $v2) {
+        			if ($k == $k2) {
+        				$arr['data'][$k]['attribute'] = $v2;
+        			}
+        		}	
+        	}
         }
         $new = qiniuPost($url,$arr);
         return self::returnMsg(200, 'success', $new);
@@ -122,14 +122,14 @@ class Image extends Api
         $url = "http://ai.qiniuapi.com/v1/image/group/".$id."/add";
         $arr = [];
         foreach (input('uri') as $k => $v) {
-            $arr['data'][$k]['uri'] = $v;
-            if(is_array(input('attribute'))){
-                foreach (input('attribute') as $k2 => $v2) {
-                    if ($k == $k2) {
-                        $arr['data'][$k]['attribute'] = $v2;
-                    }
-                }   
-            }
+        	$arr['data'][$k]['uri'] = $v;
+        	if(is_array(input('attribute'))){
+        		foreach (input('attribute') as $k2 => $v2) {
+        			if ($k == $k2) {
+        				$arr['data'][$k]['attribute'] = $v2;
+        			}
+        		}	
+        	}
         }
         $add = qiniuPost($url,$arr);
         return self::returnMsg(200, 'success', $add);

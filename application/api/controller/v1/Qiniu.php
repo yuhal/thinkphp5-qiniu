@@ -26,15 +26,19 @@ class Qiniu extends Api
      * 构造方法
      * @param Request $request Request对象
      */
-    public function __construct(Request $request)
-    {
+    public function __construct(
+        Request $request,
+        Client $client,
+        UploadManager $uploadMgr,
+        Validate $validate
+    ){
         parent::__construct($request);
         
         $this->auth = new Auth(config('qiniu.accessKey'), config('qiniu.secretKey'));
         $this->bucketMgr = new BucketManager($this->auth);
-        $this->client = new Client();
-        $this->uploadMgr = new UploadManager();
-        $this->validate = new Validate();
+        $this->client = $client;
+        $this->uploadMgr = $uploadMgr;
+        $this->validate = $validate;
     }
 
     /**

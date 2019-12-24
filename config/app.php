@@ -144,7 +144,16 @@ return [
     'exception_handle'       => '',
     //某些方法不需要使用接口鉴权，一些公共类方法
     'allow_method'=>[
-        'V1.User/index/get',   //post方法允许直接访问
+        'V1.Test/delete/delete',   
+        'V1.Test/index/get',   
+        'V1.Test/read/get',   
+        'V1.Test/save/post',   
+        'V1.Test/update/put',
+        'V2.Test/delete/delete',   
+        'V2.Test/index/get',   
+        'V2.Test/read/get',   
+        'V2.Test/save/post',   
+        'V2.Test/update/put',   
     ]
 
 

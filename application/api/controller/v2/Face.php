@@ -7,11 +7,11 @@ use think\Db;
 use think\Request;
 use think\Cache;
 use app\api\controller\Send;
-use app\api\controller\Base;
+use app\api\controller\Api;
 use app\api\validate\Face as Validate;
 use qiniu\QiniuSdk;
 
-class Face extends Base
+class Face extends Api
 {
     /**
      * 构造方法
