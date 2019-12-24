@@ -60,4 +60,9 @@ Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern
 // 将资源从一个空间到另一个空间
 Route::put(':version/move','api/:version.qiniu/move');
 
+// 新建图像库
+Route::resource(':version/image','api/:version.Image');
+
+
+
 

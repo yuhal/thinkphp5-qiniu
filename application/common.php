@@ -9,6 +9,9 @@
 // | Author: 流年 <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
+use Qiniu\Auth;
+use Qiniu\Http\Client;
+
 // 应用公共文件
 function isImage($filename)
 {
@@ -98,4 +101,42 @@ function arrayKeyAsc($arr)
         }
     }
     return $new_array;
+}
+
+/**
+ * get请求七牛
+ * @param $url
+ * @return array
+ */
+function qiniuGet($url, $data=null){
+    if($data){
+        $url = $url.'?'.http_build_query($data);
+    }
+    $auth = new Auth(config('qiniu.accessKey'), config('qiniu.secretKey'));
+    $method = "GET";
+    $host = "ai.qiniuapi.com";
+    $headers = $auth->authorizationV2($url, $method);
+    $headers['Host'] = $host;
+    $response = Client::get($url, $headers);
+    return json_decode($response->body,true);
+}
+
+/**
+ * post请求七牛
+ * @param $url
+ * @param $arr
+ * @return array
+ */
+function qiniuPost($url, $arr){
+    $auth = new Auth(config('qiniu.accessKey'), config('qiniu.secretKey'));
+    $method = "POST";
+    $host = "ai.qiniuapi.com";
+    $body = json_encode($arr);
+    $contentType = "application/json";
+    $headers = $auth->authorizationV2($url, $method, $body, $contentType);
+    $headers['Content-Type'] = $contentType;
+    $headers['Host'] = $host;
+    // var_dump('<pre>',$body);exit;
+    $response = Client::post($url, $body, $headers);
+    return json_decode($response->body,true);
 }
