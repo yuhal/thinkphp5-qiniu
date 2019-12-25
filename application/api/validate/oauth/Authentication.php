@@ -1,5 +1,5 @@
 <?php
-namespace app\api\validate;
+namespace app\api\validate\oauth;
 
 use think\Validate;
 

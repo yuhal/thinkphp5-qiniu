@@ -10,7 +10,7 @@ use Qiniu\Auth;
 use Qiniu\Http\Client;
 use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
-use app\api\validate\Qiniu as Validate;
+use app\api\validate\v1\Qiniu as Validate;
 
 class Qiniu extends Api
 {
@@ -20,8 +20,6 @@ class Qiniu extends Api
 
     protected $client = null;
 
-    protected $uploadMgr = null;
-
     /**
      * 构造方法
      * @param Request $request Request对象
@@ -29,7 +27,6 @@ class Qiniu extends Api
     public function __construct(
         Request $request,
         Client $client,
-        UploadManager $uploadMgr,
         Validate $validate
     ){
         parent::__construct($request);
@@ -37,7 +34,6 @@ class Qiniu extends Api
         $this->auth = new Auth(config('qiniu.accessKey'), config('qiniu.secretKey'));
         $this->bucketMgr = new BucketManager($this->auth);
         $this->client = $client;
-        $this->uploadMgr = $uploadMgr;
         $this->validate = $validate;
     }
 
@@ -143,13 +139,10 @@ class Qiniu extends Api
             return self::returnMsg(401, $this->validate->getError());
         }
 
-        // 获取指定账号下所有的空间名。
+         // 获取指定账号下所有的空间名。
         $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
-        if (!in_array(input('from_bucket'), $buckets[0])) {
-            self::returnMsg(404, '原空间不存在！');
-        }
-        if (!in_array(input('target_bucket'), $buckets[0])) {
-            self::returnMsg(404, '目标空间不存在！');
+        if (!in_array(input('bucket'), $buckets[0])) {
+            self::returnMsg(404, '该空间不存在！');
         }
         
         $rename = $this->bucketMgr->rename(input('bucket'), input('oldname'), input('newname'));
@@ -162,19 +155,22 @@ class Qiniu extends Api
      * @param  string  $bucket
      * @return \think\Response
      */
-    public function listFiles($bucket)
+    public function listFiles()
     {
         // 参数验证
         if (!$this->validate->sceneListFiles()->check(input(''))) {
             return self::returnMsg(401, $this->validate->getError());
         }
 
+        // 指定的空间名
+        $arguments['bucket'] = (input('?bucket') == true) ? input('bucket') : config('qiniu.bucket');
+  
         // 获取指定账号下所有的空间名。
         $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
-        if (!in_array($bucket, $buckets[0])) {
+        if (!in_array($arguments['bucket'], $buckets[0])) {
             self::returnMsg(404, '该空间不存在！');
         }
-
+        
         // 要列取文件的公共前缀
         $arguments['prefix'] = '';
         if (input('prefix')) {
@@ -199,7 +195,7 @@ class Qiniu extends Api
         $chcheKey = md5(json_encode($arguments));
         $listFiles = cache('BucketReadListFiles_'.$chcheKey);
         if (!$listFiles) {
-            $listFiles = $this->bucketMgr->listFiles($bucket, $arguments['prefix'], $arguments['marker'], $arguments['limit'], $arguments['delimiter']);
+            $listFiles = $this->bucketMgr->listFiles($arguments['bucket'], $arguments['prefix'], $arguments['marker'], $arguments['limit'], $arguments['delimiter']);
             cache('BucketReadListFiles_'.$chcheKey, $listFiles, 3600*24);
         }
         if (isset($listFiles[0]['items'])) {
@@ -240,18 +236,49 @@ class Qiniu extends Api
 
         // 获取指定账号下所有的空间名。
         $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
-        if (!in_array($bucket, $buckets[0])) {
-            self::returnMsg(404, '该空间不存在！');
+        if (!in_array(input('from_bucket'), $buckets[0])) {
+            self::returnMsg(404, '待操作资源所在空间不存在！');
+        }
+        if (!in_array(input('to_bucket'), $buckets[0])) {
+            self::returnMsg(404, '目标资源空间名不存在！');
         }
 
-        // 获取指定账号下所有的空间名。
         $move = $this->bucketMgr->move(input('from_bucket'), input('from_key'), input('to_bucket'), input('to_key'));
+        return self::returnMsg(200, 'success', $move);
+    } 
+
+    /**
+     * 上传文件到七牛
+     *
+     * @return \think\Response
+     */
+    public function putFile()
+    { 
+        //参数验证
+        // if (!$this->validate->scene(request()->action())->check(input('put.'))) {
+        //     return self::returnMsg(401, $this->validate->getError());
+        // }
+
+        $bucket = (input('?bucket') == true) ? input('bucket') : config('qiniu.bucket');
+        // 获取指定账号下所有的空间名。
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
         if (!in_array($bucket, $buckets[0])) {
-            self::returnMsg(404, '该空间不存在！');
+            self::returnMsg(404, '该资源空间不存在！');
         }
-
-
-    }
+        $file = request()->file('file');
+        $fileInfo = $file->move('/home/wwwroot/upload');
+        $arguments['upToken'] = $this->auth->uploadToken($bucket);
+        $arguments['key'] = $bucket.'-'.uniqid().'.'.$fileInfo->getExtension();
+        $arguments['filePath'] = '/home/wwwroot/upload/'.$fileInfo->getSaveName();
+        
+        if(file_exists($arguments['filePath'])){
+            $uploadMgr = new UploadManager();
+            $putFile = $uploadMgr->putFile($arguments['upToken'], $arguments['key'], $arguments['filePath']);
+            return self::returnMsg(200, 'success', $putFile);
+        }else{
+            return self::returnMsg(404, 'fail', '图片地址不存在');
+        }
+    } 
 
     /**
      * 更新空间下的文件
@@ -308,7 +335,6 @@ class Qiniu extends Api
         $this->auth = null;
         $this->bucketMgr = null;
         $this->client = null;
-        $this->uploadMgr = null;
         $this->validate = null;
     }
 }

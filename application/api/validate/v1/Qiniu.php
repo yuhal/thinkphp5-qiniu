@@ -1,5 +1,5 @@
 <?php
-namespace app\api\validate;
+namespace app\api\validate\v1;
 
 use think\Validate;
 
@@ -22,6 +22,9 @@ class Qiniu extends Validate
         'from_key'       =>  'require',
         'to_bucket'       =>  'require',
         'to_key'       =>  'require',
+        'upToken'   =>  'require',
+        'key'   =>  'require',
+        'filePath'   =>  'require',
     ];
 
     protected $message  =   [
@@ -53,5 +56,9 @@ class Qiniu extends Validate
         return $this->only(['from_bucket','from_key','to_bucket','to_key']);
     }
 
+    public function scenePutFile()
+    {
+        return $this->only(['upToken','key','filePath']);
+    }
     
 }

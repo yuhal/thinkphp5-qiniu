@@ -1,5 +1,5 @@
 <?php
-namespace app\api\controller\v1;
+namespace app\api\controller\oauth;
 
 use think\Request;
 use app\api\controller\Send;
@@ -42,7 +42,7 @@ class Token
     public function token(Request $request)
     {
         //参数验证
-        $validate = new \app\api\validate\Token;
+        $validate = new \app\api\validate\oauth\Token;
         if (!$validate->check(input(''))) {
             return self::returnMsg(401, $validate->getError());
         }

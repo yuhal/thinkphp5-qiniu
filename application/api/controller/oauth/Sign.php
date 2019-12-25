@@ -1,9 +1,9 @@
 <?php
 
-namespace app\api\controller\v1;
+namespace app\api\controller\oauth;
 
 use app\api\controller\Send;
-use app\api\validate\Sign as validate;
+use app\api\validate\oauth\Sign as validate;
 use app\api\controller\Oauth;
 use think\Controller;
 use think\Request;

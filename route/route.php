@@ -51,20 +51,29 @@ Route::get(':version/domains/:bucket','api/:version.qiniu/domains')->pattern(['b
 // 删除指定资源
 Route::delete(':version/delete','api/:version.qiniu/delete');
 
+// 上传文件到七牛
+Route::post(':version/putFile','api/:version.qiniu/putFile');
+
 // 给资源进行重命名
 Route::put(':version/rename','api/:version.qiniu/rename');
 
 // 测试资源路由
-Route::resource(':version/test','api/:version.Test');
+Route::resource(':version/test','api/:version.Test')->vars([
+	':version/test' => 'id',
+	':version/test' => 'group_id'
+]);
 
 // 获取指定空间的文件列表
-Route::get(':version/listFiles/:bucket','api/:version.qiniu/listFiles')->pattern(['bucket' => '[\w-]+']);
+Route::get(':version/listFiles','api/:version.qiniu/listFiles');
 
 // 将资源从一个空间到另一个空间
 Route::put(':version/move','api/:version.qiniu/move');
 
 // 图像库资源路由
-Route::resource(':version/image','api/:version.Image');
+Route::resource(':version/image','api/:version.Image')->vars([
+	':version/image' => 'id',
+	':version/image' => 'group_id'
+]);
 
 
 

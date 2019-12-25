@@ -8,7 +8,7 @@ use think\Request;
 use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Api;
-use app\api\validate\Face as Validate;
+use app\api\validate\v2\Face as Validate;
 use qiniu\QiniuSdk;
 
 class Face extends Api

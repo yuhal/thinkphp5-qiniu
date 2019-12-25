@@ -34,17 +34,17 @@ class Test extends Api
     /**
      * 删除图片
      *
-     * @param  int  $id
+     * @param  int  $group_id
      * @return \think\Response
      */
-    public function delete($id)
+    public function delete($group_id)
     {
         // 参数验证
         if (!$this->validate->scene(request()->action())->check(input())) {
             return self::returnMsg(401, $this->validate->getError());
         }
 
-        $url = "http://ai.qiniuapi.com/v1/image/group/".$id."/delete";
+        $url = "http://ai.qiniuapi.com/v1/image/group/".$group_id."/delete";
         $delete = qiniuPost($url, input());
         return self::returnMsg(200, 'success', $delete);
     }
@@ -69,18 +69,18 @@ class Test extends Api
     /**
      * 显示指定图片信息 
      *
-     * @param  string  $id 图像库的唯一标识
+     * @param  string  $group_id 图像库的唯一标识
      * @return \think\Response
      */
-    public function read($id)
+    public function read($group_id)
     {   
         // 参数验证
         if (!$this->validate->scene(request()->action())->check(input())) {
             return self::returnMsg(401, $this->validate->getError());
         }
 
-        $url = "http://ai.qiniuapi.com/v1/image/group/".$id."/image";
-        $image = qiniuGet($url,$this->request->only('image_id'));
+        $url = "http://ai.qiniuapi.com/v1/image/group/".$group_id."/image";
+        $image = qiniuPost($url,$this->request->only('id'));
         return self::returnMsg(200, 'success', $image);
     }
 

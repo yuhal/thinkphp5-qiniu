@@ -17,7 +17,7 @@ class Image extends Validate
     ];
 
     protected $scene = [
-        'read'  =>  ['image_id'],
+        'read'  =>  ['id'],
         'save'  =>  ['group_id','uri'],
         'update'  =>  ['uri'],
         'index'  =>  ['group_id'],

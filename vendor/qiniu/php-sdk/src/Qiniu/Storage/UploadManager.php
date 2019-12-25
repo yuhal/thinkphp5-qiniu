@@ -87,7 +87,7 @@ final class UploadManager
         $mime = 'application/octet-stream',
         $checkCrc = false
     ) {
-    
+
         $file = fopen($filePath, 'rb');
         if ($file === false) {
             throw new \Exception("file can not open", 1);
