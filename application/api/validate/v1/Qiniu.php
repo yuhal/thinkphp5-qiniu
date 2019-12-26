@@ -25,6 +25,7 @@ class Qiniu extends Validate
         'upToken'   =>  'require',
         'key'   =>  'require',
         'filePath'   =>  'require',
+        'file'   =>  'require',
     ];
 
     protected $message  =   [
@@ -46,6 +47,11 @@ class Qiniu extends Validate
         return $this->only(['bucket','key']);
     }
 
+    public function scenePutFile()
+    {
+        return $this->only(['file']);
+    }
+
     public function sceneListFiles()
     {
         return $this->only(['limit']);
@@ -54,11 +60,6 @@ class Qiniu extends Validate
     public function sceneMove()
     {
         return $this->only(['from_bucket','from_key','to_bucket','to_key']);
-    }
-
-    public function scenePutFile()
-    {
-        return $this->only(['upToken','key','filePath']);
     }
     
 }

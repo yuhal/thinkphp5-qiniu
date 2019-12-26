@@ -254,10 +254,6 @@ class Qiniu extends Api
      */
     public function putFile()
     { 
-        //参数验证
-        // if (!$this->validate->scene(request()->action())->check(input('put.'))) {
-        //     return self::returnMsg(401, $this->validate->getError());
-        // }
 
         $bucket = (input('?bucket') == true) ? input('bucket') : config('qiniu.bucket');
         // 获取指定账号下所有的空间名。
@@ -265,12 +261,32 @@ class Qiniu extends Api
         if (!in_array($bucket, $buckets[0])) {
             self::returnMsg(404, '该资源空间不存在！');
         }
-        $file = request()->file('file');
-        $fileInfo = $file->move('/home/wwwroot/upload');
+
         $arguments['upToken'] = $this->auth->uploadToken($bucket);
-        $arguments['key'] = $bucket.'-'.uniqid().'.'.$fileInfo->getExtension();
-        $arguments['filePath'] = '/home/wwwroot/upload/'.$fileInfo->getSaveName();
-        
+        // 参数验证
+        if ($this->validate->scenePutFile()->check(request()->file())) {
+            $file = request()->file('file');
+            $fileInfo = $file->move(config('qiniu.updir'));
+            $arguments['key'] = $bucket.'-'.uniqid().'.'.$fileInfo->getExtension();
+            $arguments['filePath'] = config('qiniu.updir').$fileInfo->getSaveName();
+        }elseif ($this->validate->scenePutFile()->check(input())) {
+            $imgBase64 = input('file');
+            if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $imgBase64, $res)) {
+                // 图片类型
+                $type = $res[2];
+                // 图片保存路径
+                $arguments['key'] = $bucket.'-'.uniqid().'.'.$type;
+                $arguments['filePath'] = config('qiniu.updir').$arguments['key'];
+                if (!file_put_contents($arguments['filePath'], base64_decode(str_replace($res[1], '', $imgBase64)))) {
+                    return self::returnMsg(401, 'fail', '图片上传失败');
+                } 
+            }else{
+                return self::returnMsg(401, 'fail', '图片解析失败');
+            }
+        }else{
+            return self::returnMsg(401, $this->validate->getError());
+        }
+          
         if(file_exists($arguments['filePath'])){
             $uploadMgr = new UploadManager();
             $putFile = $uploadMgr->putFile($arguments['upToken'], $arguments['key'], $arguments['filePath']);
@@ -279,52 +295,6 @@ class Qiniu extends Api
             return self::returnMsg(404, 'fail', '图片地址不存在');
         }
     } 
-
-    /**
-     * 更新空间下的文件
-     *
-     * @param  \think\Request  $request
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //参数验证
-        if (!$this->validate->scene(request()->action())->check(input('put.'))) {
-            return self::returnMsg(401, $this->validate->getError());
-        }
-        $config = array_merge(config('qiniu.'), ['bucket'=>$id]);
-        $qiniuSdk = new QiniuSdk($config);
-        $imgBase64 = input('put.uri');
-        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $imgBase64, $res)) {
-            //获取图片类型
-            $type = $res[2];
-            //图片保存路径
-            $fileDir = "/mnt/avatar/".date('Ymd', time()).'/';
-            if (!file_exists($fileDir)) {
-                mkdir($fileDir, 0777, true);
-            }
-            $fileName = $id.'-'.time().'.'.$type;
-            $filePath = $fileDir.$fileName;
-            if (file_put_contents($filePath, base64_decode(str_replace($res[1], '', $imgBase64)))) {
-                //图片名字
-                $arguments['file'] = $fileName;
-                $arguments['filepath'] = $filePath;
-                $putFileRe = $qiniuSdk->putFile($arguments);
-                if ($putFileRe) {
-                    $result['fileName'] = $putFileRe;
-                    //删除对应目录的文件
-                    unlink($filePath);
-                    return self::returnMsg(200, 'success', $result);
-                }
-                return self::returnMsg(500, 'fail', '图片上传失败');
-            } else {
-                return self::returnMsg(500, 'fail', '图片地址不存在');
-            }
-        } else {
-            return self::returnMsg(500, 'fail', '图片解析失败');
-        }
-    }
 
     /**
      * 析构方法

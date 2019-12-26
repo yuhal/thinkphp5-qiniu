@@ -22,4 +22,6 @@ return [
     'shared'              => '15736736889@163.com',
     // 默认仓库
     'bucket'              => 'yuhal-image',
+    // 上传目录
+    'updir'              => '/home/wwwroot/upload/',
 ];
