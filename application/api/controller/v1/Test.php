@@ -29,51 +29,51 @@ class Test extends Api
     }
 
     /**
-     * 删除图像库
+     * 删除人像库
      *
      * @param  int  $id
      * @return \think\Response
      */
     public function delete($id)
     {
-        // 列出该用户下所有的图像库
-        $url = "http://ai.qiniuapi.com/v1/image/group";
+        // 列出该用户下所有的人像库
+        $url = "http://ai.qiniuapi.com/v1/face/group";
         $group = qiniuGet($url);
         if (!in_array($id, $group['result'])) {
-            self::returnMsg(404, '该图像库不存在！');
+            self::returnMsg(404, '该人像库不存在！');
         }
 
-        qiniuPost("http://ai.qiniuapi.com/v1/image/group/".$id."/remove");
-        return self::returnMsg(200, 'success', '删除图像库成功');
+        qiniuPost("http://ai.qiniuapi.com/v1/face/group/".$id."/remove");
+        return self::returnMsg(200, 'success', '删除人像库成功');
     }
 
     /**
-     * 显示所有图像库  
+     * 显示所有人像库  
      *
      * @return \think\Response
      */
     public function index()
     {
-        $url = "http://ai.qiniuapi.com/v1/image/group";
+        $url = "http://ai.qiniuapi.com/v1/face/group";
         $group = qiniuGet($url);
         return self::returnMsg(200, 'success', $group);
     }
 
     /**
-     * 显示指定图像库信息
+     * 显示指定人像库信息
      *
-     * @param  string  $id 指定的图像库
+     * @param  string  $id 指定的人像库
      * @return \think\Response
      */
     public function read($id)
     {   
-        $url = "http://ai.qiniuapi.com/v1/image/group/".$id."/info";
+        $url = "http://ai.qiniuapi.com/v1/face/group/".$id."/info";
         $info = qiniuGet($url);
         return self::returnMsg(200, 'success', $info);
     }
 
     /**
-     * 新建图像库
+     * 新建人像库
      *
      * @return \think\Response
      */
@@ -83,7 +83,7 @@ class Test extends Api
         if (!$this->validate->scene(request()->action())->check(input(''))) {
             return self::returnMsg(401, $this->validate->getError());
         }
-        $url = "http://ai.qiniuapi.com/v1/image/group/".input('group_id')."/new";
+        $url = "http://ai.qiniuapi.com/v1/face/group/".input('group_id')."/new";
         $arr = [];
         foreach (input('uri') as $k => $v) {
             $arr['data'][$k]['uri'] = $v;
@@ -100,18 +100,18 @@ class Test extends Api
     }
 
     /**
-     * 添加图片 
+     * 添加人脸  
      *
      * @param  \think\Request  $request
      * @return \think\Response
      */
     public function update(Request $request, $id)
     {
-        // 列出该用户下所有的图像库
-        $url = "http://ai.qiniuapi.com/v1/image/group";
+        // 列出该用户下所有的人像库
+        $url = "http://ai.qiniuapi.com/v1/face/group";
         $group = qiniuGet($url);
         if (!in_array($id, $group['result'])) {
-            self::returnMsg(404, '该图像库不存在！');
+            self::returnMsg(404, '该人像库不存在！');
         }
 
         // 参数验证
@@ -119,7 +119,7 @@ class Test extends Api
             return self::returnMsg(401, $this->validate->getError());
         }
         
-        $url = "http://ai.qiniuapi.com/v1/image/group/".$id."/add";
+        $url = "http://ai.qiniuapi.com/v1/face/group/".$id."/add";
         $arr = [];
         foreach (input('uri') as $k => $v) {
             $arr['data'][$k]['uri'] = $v;

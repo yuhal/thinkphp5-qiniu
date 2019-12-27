@@ -27,10 +27,12 @@ Route::resource(':version/face','api/:version.Face')->vars([
 ]);
 
 // 测试资源路由
-Route::resource(':version/test','api/:version.Test')->vars([
-	':version/test' => 'id',
-	':version/test' => 'group_id'
-]);
+// Route::resource(':version/test','api/:version.Test')->vars([
+// 	':version/test' => 'id',
+// 	':version/test' => 'group_id'
+// ]);
+Route::resource('v1/test','api/v1.Test')->vars(['v1/test' => 'id']);
+Route::resource('v2/test','api/v2.Test')->vars(['v2/test' => 'group_id']);
 
 // 图像库资源路由
 Route::resource(':version/image','api/:version.Image')->vars([

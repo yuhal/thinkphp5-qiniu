@@ -13,13 +13,7 @@ class Face extends Validate
         'groups'       =>  'require',
         'id'       =>  'require',
     ];
-
-    protected $message  =   [
-        'uri.require'    => 'uri不能为空',
-        'groups.require'    => 'groups不能为空',
-        'id.require'    => 'id不能为空',
-    ];
-
+    
     protected $scene = [
         'read'  =>  ['uri','groups'],
         'save'  =>  ['id','uri'],
