@@ -1,5 +1,5 @@
 <?php
-namespace app\api\validate\v1;
+namespace app\api\validate\v2;
 
 use think\Validate;
 
@@ -9,21 +9,15 @@ use think\Validate;
 class Face extends Validate
 {
     protected $rule = [
-        'uri'       =>  'require',
+        'group_id'       =>  'require',
         'groups'       =>  'require',
+        'faces'       =>  'require',
         'id'       =>  'require',
     ];
 
-    protected $message  =   [
-        'uri.require'    => 'uri不能为空',
-        'groups.require'    => 'groups不能为空',
-        'id.require'    => 'id不能为空',
-    ];
-
     protected $scene = [
-        'read'  =>  ['uri','groups'],
-        'save'  =>  ['id','uri'],
-        'update'  =>  ['uri'],
-        'index'  =>  ['uri'],
+        'read'  =>  ['id'],
+        'index'  =>  ['group_id'],
+        'delete'  =>  ['faces'],
     ];
 }

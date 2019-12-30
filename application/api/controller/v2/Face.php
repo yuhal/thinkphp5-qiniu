@@ -8,132 +8,90 @@ use think\Request;
 use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Api;
-use app\api\validate\v2\Face as Validate;
-use qiniu\QiniuSdk;
+use Qiniu\Auth;
+use Qiniu\Http\Client;
+use Qiniu\Storage\UploadManager;
+use Qiniu\Storage\BucketManager;
+use app\api\validate\v2\face as Validate;
 
 class Face extends Api
 {
+
     /**
      * 构造方法
      * @param Request $request Request对象
      */
-    public function __construct(Request $request)
-    {
+    public function __construct(
+        Request $request,
+        Validate $validate
+    ){
         parent::__construct($request);
-        $this->qiniuSdk = new QiniuSdk(config('qiniu.'));
-        $this->Validate = new Validate();
+        
+        $this->request = $request;
+        $this->validate = $validate;
     }
+
     /**
-     * 人脸搜索
+     * 删除图片
+     *
+     * @param  int  $group_id
+     * @return \think\Response
+     */
+    public function delete($group_id)
+    {
+        // 参数验证
+        if (!$this->validate->scene(request()->action())->check(input())) {
+            return self::returnMsg(401, $this->validate->getError());
+        }
+
+        $url = "http://ai.qiniuapi.com/v1/face/group/".$group_id."/delete";
+        $delete = qiniuPost($url, input());
+        return self::returnMsg(200, 'success', $delete);
+    }
+
+    /**
+     * 显示所有人脸        
      *
      * @return \think\Response
      */
     public function index()
     {
-        //参数验证
-        if (!$this->Validate->scene(request()->action())->check(input('get.'))) {
-            return self::returnMsg(401, $this->Validate->getError());
+        // 参数验证
+        if (!$this->validate->scene(request()->action())->check(input())) {
+            return self::returnMsg(401, $this->validate->getError());
         }
-        // 列出该用户下所有的图像库
-        $faceGroupList = $this->qiniuSdk->listFaceGroup();
-        if (!isset($faceGroupList['result'])) {
-            return self::returnMsg(500, 'fail', $faceGroupList);
-        }
-        // 要搜索的头像地址
-        $arguments['uri'] = input('get.uri');
-        // 要搜索的人脸仓库
-        $arguments['groups'] = $faceGroupList['result'];
-        $chcheKey = md5(json_encode($arguments));
-        $faceGroupSearch = cache('FaceIndexFaceGroupSearch_'.$chcheKey);
-        if (!$faceGroupSearch) {
-            $faceGroupSearch = $this->qiniuSdk->faceGroupSearch($arguments);
-            cache('FaceIndexFaceGroupSearch_'.$chcheKey, $faceGroupSearch, 3600*24*7);
-        }
-        $maxScore = 0;
-        if (isset($faceGroupSearch['result']['faces'][0]['faces']) && is_array($faceGroupSearch['result']['faces'][0]['faces'])) {
-            $maxScore = intval(max(array_column($faceGroupSearch['result']['faces'][0]['faces'], 'score'))*100);
-        }
-        return self::returnMsg(200, 'success', $maxScore);
+
+        $url = "http://ai.qiniuapi.com/v1/face/group/".input('group_id');
+        $group = qiniuGet($url,$this->request->only('marker,limit'));
+        return self::returnMsg(200, 'success', $group);
     }
 
     /**
-     * 显示创建资源表单页.
+     * 显示指定图片信息 
      *
+     * @param  string  $group_id 图像库的唯一标识
      * @return \think\Response
      */
-    public function create()
-    {
-        echo 'create';
-        exit;
-    }
-
-    /**
-     * 保存新建的资源
-     *
-     * @param  \think\Request  $request
-     * @return \think\Response
-     */
-    public function save(Request $request)
-    {
-        //参数验证
-        if (!$this->Validate->scene(request()->action())->check(input('post.'))) {
-            return self::returnMsg(401, $this->Validate->getError());
+    public function read($group_id)
+    {   
+        // 参数验证
+        if (!$this->validate->scene(request()->action())->check(input())) {
+            return self::returnMsg(401, $this->validate->getError());
         }
-        $arguments['group_id'] = input('post.id');
-        $arguments['uri'] = input('post.uri');
-        return self::returnMsg(200, 'success', $this->qiniuSdk->newFaceGroup($arguments));
+
+        $url = "http://ai.qiniuapi.com/v1/face/group/".$group_id."/face";
+        $face = qiniuPost($url,$this->request->only('id'));
+        return self::returnMsg(200, 'success', $face);
     }
 
     /**
-     * 显示指定人像库信息
-     *
-     * @param  string  $id 指定的人脸图像库
-     * @return \think\Response
+     * 析构方法
+     * @param Request $request Request对象
      */
-    public function read($id)
+    public function __destruct()
     {
-        $arguments['group_id'] = $id;
-        $faceGroupInfo = $this->qiniuSdk->faceGroupInfo($arguments);
-        return self::returnMsg(200, 'success', $faceGroupInfo);
+        $this->request = null;
+        $this->validate = null;
     }
 
-    /**
-     * 显示编辑资源表单页.
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function edit($id)
-    {
-        echo "edit";
-    }
-
-    /**
-     * 保存更新的资源
-     *
-     * @param  \think\Request  $request
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //参数验证
-        if (!$this->Validate->scene(request()->action())->check(input('put.'))) {
-            return self::returnMsg(401, $this->Validate->getError());
-        }
-        $arguments['group_id'] = $id;
-        $arguments['uri'] = input('put.uri');
-        return self::returnMsg(200, 'success', $this->qiniuSdk->updateFaceGroup($arguments));
-    }
-
-    /**
-     * 删除指定资源
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function delete($id)
-    {
-        echo "delete";
-    }
 }

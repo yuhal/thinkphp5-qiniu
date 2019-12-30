@@ -12,7 +12,7 @@ use Qiniu\Auth;
 use Qiniu\Http\Client;
 use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
-use app\api\validate\v2\Image as Validate;
+use app\api\validate\v2\Face as Validate;
 
 class Test extends Api
 {
@@ -32,7 +32,7 @@ class Test extends Api
     }
 
     /**
-     * 删除图片
+     * 删除人脸
      *
      * @param  int  $group_id
      * @return \think\Response
@@ -44,13 +44,13 @@ class Test extends Api
             return self::returnMsg(401, $this->validate->getError());
         }
 
-        $url = "http://ai.qiniuapi.com/v1/image/group/".$group_id."/delete";
+        $url = "http://ai.qiniuapi.com/v1/face/group/".$group_id."/delete";
         $delete = qiniuPost($url, input());
         return self::returnMsg(200, 'success', $delete);
     }
 
     /**
-     * 显示所有图片     
+     * 显示所有人脸     
      *
      * @return \think\Response
      */
@@ -61,15 +61,15 @@ class Test extends Api
             return self::returnMsg(401, $this->validate->getError());
         }
 
-        $url = "http://ai.qiniuapi.com/v1/image/group/".input('group_id');
+        $url = "http://ai.qiniuapi.com/v1/face/group/".input('group_id');
         $group = qiniuGet($url,$this->request->only('marker,limit'));
         return self::returnMsg(200, 'success', $group);
     }
 
     /**
-     * 显示指定图片信息 
+     * 显示指定人脸 信息 
      *
-     * @param  string  $group_id 图像库的唯一标识
+     * @param  string  $group_id 人像库的唯一标识
      * @return \think\Response
      */
     public function read($group_id)
@@ -79,9 +79,9 @@ class Test extends Api
             return self::returnMsg(401, $this->validate->getError());
         }
 
-        $url = "http://ai.qiniuapi.com/v1/image/group/".$group_id."/image";
-        $image = qiniuPost($url,$this->request->only('id'));
-        return self::returnMsg(200, 'success', $image);
+        $url = "http://ai.qiniuapi.com/v1/face/group/".$group_id."/face";
+        $face = qiniuPost($url,$this->request->only('id'));
+        return self::returnMsg(200, 'success', $face);
     }
 
     /**
