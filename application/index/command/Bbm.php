@@ -13,7 +13,7 @@ use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
 use app\index\controller\Mail;
 
-class Test extends Command
+class Bbm extends Command
 {
 
     private $name = '批量重命名文件';
@@ -24,7 +24,7 @@ class Test extends Command
      */
     protected function configure()
     {
-        $this->setName('Test')
+        $this->setName('Bbm')
             ->addArgument('bucket', Argument::OPTIONAL, "资源空间名", config('qiniu.bucket'))
             ->setDescription('
                 批量重命名某个空间下的文件，

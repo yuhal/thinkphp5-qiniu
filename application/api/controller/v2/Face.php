@@ -2,16 +2,9 @@
 
 namespace app\api\controller\v2;
 
-use think\Controller;
-use think\Db;
 use think\Request;
-use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Api;
-use Qiniu\Auth;
-use Qiniu\Http\Client;
-use Qiniu\Storage\UploadManager;
-use Qiniu\Storage\BucketManager;
 use app\api\validate\v2\face as Validate;
 
 class Face extends Api
