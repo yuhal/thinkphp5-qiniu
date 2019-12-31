@@ -9,8 +9,11 @@
 // | Author: yunwuxin <448901948@qq.com>
 // +----------------------------------------------------------------------
 
-// 测试
-return ['app\index\command\Test'];
 
-// 批量重命名文件
-return ['app\index\command\Bbm'];
+return [
+	// 测试
+	'app\index\command\Test',
+	// 批量重命名文件
+	'app\index\command\Bbm'
+];
+
