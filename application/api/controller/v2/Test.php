@@ -5,7 +5,7 @@ namespace app\api\controller\v2;
 use think\Request;
 use app\api\controller\Send;
 use app\api\controller\Api;
-use app\api\validate\v2\Face as Validate;
+use app\api\validate\v2\face as Validate;
 
 class Test extends Api
 {
@@ -25,7 +25,7 @@ class Test extends Api
     }
 
     /**
-     * 删除人脸
+     * 删除图片
      *
      * @param  int  $group_id
      * @return \think\Response
@@ -43,7 +43,7 @@ class Test extends Api
     }
 
     /**
-     * 显示所有人脸     
+     * 显示所有人脸        
      *
      * @return \think\Response
      */
@@ -60,9 +60,9 @@ class Test extends Api
     }
 
     /**
-     * 显示指定人脸 信息 
+     * 显示指定图片信息 
      *
-     * @param  string  $group_id 人像库的唯一标识
+     * @param  string  $group_id 图像库的唯一标识
      * @return \think\Response
      */
     public function read($group_id)

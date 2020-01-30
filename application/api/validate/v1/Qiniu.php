@@ -26,6 +26,7 @@ class Qiniu extends Validate
         'key'   =>  'require',
         'filePath'   =>  'require',
         'file'   =>  'require',
+        'group_id'   =>  'require',
     ];
 
     protected $message  =   [
@@ -60,6 +61,11 @@ class Qiniu extends Validate
     public function sceneMove()
     {
         return $this->only(['from_bucket','from_key','to_bucket','to_key']);
+    }
+
+    public function sceneFaceSearch()
+    {
+        return $this->only(['uri','group_id']);
     }
     
 }

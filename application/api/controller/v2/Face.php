@@ -5,7 +5,7 @@ namespace app\api\controller\v2;
 use think\Request;
 use app\api\controller\Send;
 use app\api\controller\Api;
-use app\api\validate\v2\face as Validate;
+use app\api\validate\v2\Face as Validate;
 
 class Face extends Api
 {

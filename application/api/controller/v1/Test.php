@@ -3,136 +3,347 @@
 namespace app\api\controller\v1;
 
 use think\Controller;
-use think\Db;
 use think\Request;
-use think\Cache;
 use app\api\controller\Send;
 use app\api\controller\Api;
 use Qiniu\Auth;
 use Qiniu\Http\Client;
 use Qiniu\Storage\UploadManager;
 use Qiniu\Storage\BucketManager;
-use app\api\validate\v1\Image as Validate;
+use app\api\validate\v1\Qiniu as Validate;
 
 class Test extends Api
 {
+    protected $auth = null;
+
+    protected $bucketMgr = null;
+
+    protected $client = null;
 
     /**
      * 构造方法
      * @param Request $request Request对象
      */
-    public function __construct(Request $request)
-    {
+    public function __construct(
+        Request $request,
+        Client $client,
+        Validate $validate
+    ){
         parent::__construct($request);
         
-        $this->validate = new Validate();
+        $this->auth = new Auth(config('qiniu.accessKey'), config('qiniu.secretKey'));
+        $this->bucketMgr = new BucketManager($this->auth);
+        $this->client = $client;
+        $this->validate = $validate;
     }
 
     /**
-     * 删除人像库
+     * 获取指定账号下所有的空间名。
      *
-     * @param  int  $id
      * @return \think\Response
      */
-    public function delete($id)
+    public function buckets()
     {
-        // 列出该用户下所有的人像库
-        $url = "http://ai.qiniuapi.com/v1/face/group";
-        $group = qiniuGet($url);
-        if (!in_array($id, $group['result'])) {
-            self::returnMsg(404, '该人像库不存在！');
-        }
-
-        qiniuPost("http://ai.qiniuapi.com/v1/face/group/".$id."/remove");
-        return self::returnMsg(200, 'success', '删除人像库成功');
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        return self::returnMsg(200, 'success', $buckets);
     }
 
     /**
-     * 显示所有人像库  
+     * 批量移动或重命名文件
      *
      * @return \think\Response
      */
-    public function index()
+    public function buildBatchMove()
     {
-        $url = "http://ai.qiniuapi.com/v1/face/group";
-        $group = qiniuGet($url);
-        return self::returnMsg(200, 'success', $group);
-    }
-
-    /**
-     * 显示指定人像库信息
-     *
-     * @param  string  $id 指定的人像库
-     * @return \think\Response
-     */
-    public function read($id)
-    {   
-        $url = "http://ai.qiniuapi.com/v1/face/group/".$id."/info";
-        $info = qiniuGet($url);
-        return self::returnMsg(200, 'success', $info);
-    }
-
-    /**
-     * 新建人像库
-     *
-     * @return \think\Response
-     */
-    public function save(Request $request)
-    {
-        // 参数验证
-        if (!$this->validate->scene(request()->action())->check(input(''))) {
+        //参数验证
+        if (!$this->validate->sceneBuildBatchMove()->check(input(''))) {
             return self::returnMsg(401, $this->validate->getError());
         }
-        $url = "http://ai.qiniuapi.com/v1/face/group/".input('group_id')."/new";
-        $arr = [];
-        foreach (input('uri') as $k => $v) {
-            $arr['data'][$k]['uri'] = $v;
-            if(is_array(input('attribute'))){
-                foreach (input('attribute') as $k2 => $v2) {
-                    if ($k == $k2) {
-                        $arr['data'][$k]['attribute'] = $v2;
-                    }
-                }   
+
+        // 列出该用户下所有的空间
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        if (!in_array(input('source_bucket'), $buckets[0])) {
+            self::returnMsg(404, '原空间不存在！');
+        }
+        if (!in_array(input('target_bucket'), $buckets[0])) {
+            self::returnMsg(404, '目标空间不存在！');
+        }
+
+        // 列出原空间的文件列表
+        $listFiles = $this->bucketMgr->listFiles(input('source_bucket'));
+        if (isset($listFiles[0]['items'])) {
+            $keys = array_column($listFiles[0]['items'], 'key');
+            $keyPairs = array();
+            foreach ($keys as $key) {
+                $keyPairs[$key] = $key;
             }
         }
-        $new = qiniuPost($url,$arr);
-        return self::returnMsg(200, 'success', $new);
+        $ops = $this->bucketMgr->buildBatchMove(input('source_bucket'), $keyPairs, input('target_bucket'), true);
+        list($ret, $err) = $this->bucketMgr->batch($ops);
+        if ($err) {
+            return self::returnMsg(500, 'fail', '批量操作失败');
+        } else {
+            return self::returnMsg(200, 'success', '批量操作成功');
+        }
     }
 
     /**
-     * 添加人脸  
-     *
-     * @param  \think\Request  $request
+     * 获取指定空间绑定的所有的域名
+     * 
+     * @param  string  $bucket
      * @return \think\Response
      */
-    public function update(Request $request, $id)
+    public function domains($bucket)
     {
-        // 列出该用户下所有的人像库
-        $url = "http://ai.qiniuapi.com/v1/face/group";
-        $group = qiniuGet($url);
-        if (!in_array($id, $group['result'])) {
-            self::returnMsg(404, '该人像库不存在！');
+        // 获取指定账号下所有的空间名。
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        if (!in_array($bucket, $buckets[0])) {
+            self::returnMsg(404, '该空间不存在！');
         }
 
-        // 参数验证
-        if (!$this->validate->scene(request()->action())->check(input(''))) {
+        $domains = $this->bucketMgr->domains($bucket);
+        return self::returnMsg(200, 'success', $domains);
+    }
+
+    /**
+     * 删除指定资源
+     * 
+     * @return \think\Response
+     */
+    public function delete()
+    {
+        //参数验证
+        if (!$this->validate->sceneDelete()->check(input(''))) {
             return self::returnMsg(401, $this->validate->getError());
+        }
+
+        // 获取指定账号下所有的空间名。
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        if (!in_array(input('bucket'), $buckets[0])) {
+            self::returnMsg(404, '该空间不存在！');
+        }
+
+        $delete = $this->bucketMgr->delete(input('bucket'), input('key'));
+        return self::returnMsg(200, 'success', $delete);
+    }
+
+    /**
+     * 给资源进行重命名
+     * 
+     * @return \think\Response
+     */
+    public function rename()
+    {
+        // 参数验证
+        if (!$this->validate->sceneRename()->check(input(''))) {
+            return self::returnMsg(401, $this->validate->getError());
+        }
+
+         // 获取指定账号下所有的空间名。
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        if (!in_array(input('bucket'), $buckets[0])) {
+            self::returnMsg(404, '该空间不存在！');
         }
         
-        $url = "http://ai.qiniuapi.com/v1/face/group/".$id."/add";
-        $arr = [];
-        foreach (input('uri') as $k => $v) {
-            $arr['data'][$k]['uri'] = $v;
-            if(is_array(input('attribute'))){
-                foreach (input('attribute') as $k2 => $v2) {
-                    if ($k == $k2) {
-                        $arr['data'][$k]['attribute'] = $v2;
-                    }
-                }   
-            }
-        }
-        $add = qiniuPost($url,$arr);
-        return self::returnMsg(200, 'success', $add);
+        $rename = $this->bucketMgr->rename(input('bucket'), input('oldname'), input('newname'));
+        return self::returnMsg(200, 'success', $rename);
     }
 
+    /**
+     * 获取指定空间的文件列表。
+     *
+     * @param  string  $bucket
+     * @return \think\Response
+     */
+    public function listFiles()
+    {
+        // 参数验证
+        if (!$this->validate->sceneListFiles()->check(input(''))) {
+            return self::returnMsg(401, $this->validate->getError());
+        }
+
+        // 指定的空间名
+        $arguments['bucket'] = (input('?bucket') == true) ? input('bucket') : config('qiniu.bucket');
+  
+        // 获取指定账号下所有的空间名。
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        if (!in_array($arguments['bucket'], $buckets[0])) {
+            self::returnMsg(404, '该空间不存在！');
+        }
+        
+        // 要列取文件的公共前缀
+        $arguments['prefix'] = '';
+        if (input('prefix')) {
+            $arguments['prefix'] = input('prefix');
+        }
+        // 上次列举返回的位置标记，作为本次列举的起点信息。
+        $arguments['marker'] = '';
+        if (input('marker')) {
+            $arguments['marker'] = input('marker');
+        }
+        // 本次列举的条目数
+        $arguments['limit'] = '';
+        if (input('limit')) {
+            $arguments['limit'] = input('limit');
+        }
+        // 分隔符
+        $arguments['delimiter'] = '';
+        if (input('delimiter')) {
+            $arguments['delimiter'] = input('delimiter');
+        }
+
+        $chcheKey = md5(json_encode($arguments));
+        $listFiles = cache('BucketReadListFiles_'.$chcheKey);
+        if (!$listFiles) {
+            $listFiles = $this->bucketMgr->listFiles($arguments['bucket'], $arguments['prefix'], $arguments['marker'], $arguments['limit'], $arguments['delimiter']);
+            cache('BucketReadListFiles_'.$chcheKey, $listFiles, 3600*24);
+        }
+        if (isset($listFiles[0]['items'])) {
+            // 排序
+            switch (input('order')) {
+                case 1:
+                    // 按照添加时间正序
+                    $items = arraySort($listFiles[0]['items'], 'putTime');
+                    break;
+                case 2:
+                    // 按照添加时间倒序
+                    $items = arraySort($listFiles[0]['items'], 'putTime', 'desc');
+                    break;
+                default:
+                    // 按照添加时间倒序
+                    $items = arraySort($listFiles[0]['items'], 'putTime', 'desc');
+                    break;
+            }
+            $listFiles[0]['items'] = arrayKeyAsc($items);
+            return self::returnMsg(200, 'success', $listFiles);
+        } else {
+            $listFiles = object_to_array($listFiles[1]);
+            return self::returnMsg(500, 'fail', json_decode($listFiles['response']->body, true));
+        }
+    }
+
+    /**
+     * 将资源从一个空间到另一个空间
+     *
+     * @return \think\Response
+     */
+    public function move()
+    {
+        // 参数验证
+        if (!$this->validate->sceneMove()->check(input(''))) {
+            return self::returnMsg(401, $this->validate->getError());
+        }
+
+        // 获取指定账号下所有的空间名。
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        if (!in_array(input('from_bucket'), $buckets[0])) {
+            self::returnMsg(404, '待操作资源所在空间不存在！');
+        }
+        if (!in_array(input('to_bucket'), $buckets[0])) {
+            self::returnMsg(404, '目标资源空间名不存在！');
+        }
+
+        $move = $this->bucketMgr->move(input('from_bucket'), input('from_key'), input('to_bucket'), input('to_key'));
+        return self::returnMsg(200, 'success', $move);
+    } 
+
+    /**
+     * 上传文件到七牛
+     *
+     * @return \think\Response
+     */
+    public function putFile()
+    { 
+        $bucket = (input('?bucket') == true) ? input('bucket') : config('qiniu.bucket');
+        // 获取指定账号下所有的空间名。
+        $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
+        if (!in_array($bucket, $buckets[0])) {
+            self::returnMsg(404, '该资源空间不存在！');
+        }
+
+        $arguments['upToken'] = $this->auth->uploadToken($bucket);
+        // 参数验证
+        if ($this->validate->scenePutFile()->check(request()->file())) {
+            $file = request()->file('file');
+            $fileInfo = $file->move(config('qiniu.updir'));
+            $arguments['key'] = $bucket.'-'.uniqid().'.'.$fileInfo->getExtension();
+            $arguments['filePath'] = config('qiniu.updir').$fileInfo->getSaveName();
+        }elseif ($this->validate->scenePutFile()->check(input())) {
+            $imgBase64 = input('file');
+            if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $imgBase64, $res)) {
+                // 图片类型
+                $type = $res[2];
+                // 图片保存路径
+                $arguments['key'] = $bucket.'-'.uniqid().'.'.$type;
+                $arguments['filePath'] = config('qiniu.updir').$arguments['key'];
+                if (!file_put_contents($arguments['filePath'], base64_decode(str_replace($res[1], '', $imgBase64)))) {
+                    return self::returnMsg(401, 'fail', '图片上传失败');
+                } 
+            }else{
+                return self::returnMsg(401, 'fail', '图片解析失败');
+            }
+        }else{
+            return self::returnMsg(401, $this->validate->getError());
+        }
+          
+        if(file_exists($arguments['filePath'])){
+            $uploadMgr = new UploadManager();
+            $putFile = $uploadMgr->putFile($arguments['upToken'], $arguments['key'], $arguments['filePath']);
+            return self::returnMsg(200, 'success', $putFile);
+        }else{
+            return self::returnMsg(404, 'fail', '图片地址不存在');
+        }
+    } 
+
+    /**
+     * 人脸搜索
+     *
+     * @return \think\Response
+     */
+    public function faceSearch()
+    { 
+        // 参数验证
+        if (!$this->validate->sceneFaceSearch()->check(input(''))) {
+            return self::returnMsg(401, $this->validate->getError());
+        }
+
+        $group_id = (input('?group_id') == true) ? input('group_id') : config('qiniu.faceGroup');
+        // 获取指定账号下所有的人脸图像库。
+        $url = "http://ai.qiniuapi.com/v1/face/group";
+        $groups = qiniuGet($url);
+        if (!isset($groups['result']) || !in_array($group_id, $groups['result'])) {
+            self::returnMsg(404, '该人脸库不存在！');
+        }
+
+        $url = "http://ai.qiniuapi.com/v1/face/groups/search";
+        $arr['data']['uri'] = input('uri');
+        $arr['params']['groups'] = [$group_id];
+        if (input('limit')) {
+            $arr['params']['limit'] = input('limit');
+        }
+        if (input('threshold')) {
+            $arr['params']['threshold'] = input('threshold');
+        }
+        if (input('mode')) {
+            $arr['params']['mode'] = input('mode');
+        }
+        $search = qiniuPost($url,$arr);
+        $score = 0;
+        if (isset($search['result']['faces'][0]['faces'][0]['score'])) {
+            $score = $search['result']['faces'][0]['faces'][0]['score'];
+        }
+        return self::returnMsg(200, 'success', $score);
+    }
+
+    /**
+     * 析构方法
+     * @param Request $request Request对象
+     */
+    public function __destruct()
+    {
+        $this->auth = null;
+        $this->bucketMgr = null;
+        $this->client = null;
+        $this->validate = null;
+    }
 }

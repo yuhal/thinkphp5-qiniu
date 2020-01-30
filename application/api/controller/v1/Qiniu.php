@@ -254,7 +254,6 @@ class Qiniu extends Api
      */
     public function putFile()
     { 
-
         $bucket = (input('?bucket') == true) ? input('bucket') : config('qiniu.bucket');
         // 获取指定账号下所有的空间名。
         $buckets = $this->bucketMgr->buckets(config('qiniu.shared'));
@@ -295,6 +294,46 @@ class Qiniu extends Api
             return self::returnMsg(404, 'fail', '图片地址不存在');
         }
     } 
+
+    /**
+     * 人脸搜索
+     *
+     * @return \think\Response
+     */
+    public function faceSearch()
+    { 
+        // 参数验证
+        if (!$this->validate->sceneFaceSearch()->check(input(''))) {
+            return self::returnMsg(401, $this->validate->getError());
+        }
+
+        $group_id = (input('?group_id') == true) ? input('group_id') : config('qiniu.faceGroup');
+        // 获取指定账号下所有的人脸图像库。
+        $url = "http://ai.qiniuapi.com/v1/face/group";
+        $groups = qiniuGet($url);
+        if (!isset($groups['result']) || !in_array($group_id, $groups['result'])) {
+            self::returnMsg(404, '该人脸库不存在！');
+        }
+
+        $url = "http://ai.qiniuapi.com/v1/face/groups/search";
+        $arr['data']['uri'] = input('uri');
+        $arr['params']['groups'] = [$group_id];
+        if (input('limit')) {
+            $arr['params']['limit'] = input('limit');
+        }
+        if (input('threshold')) {
+            $arr['params']['threshold'] = input('threshold');
+        }
+        if (input('mode')) {
+            $arr['params']['mode'] = input('mode');
+        }
+        $search = qiniuPost($url,$arr);
+        $score = 0;
+        if (isset($search['result']['faces'][0]['faces'])) {
+            $score = $search['result']['faces'][0]['faces'][0]['score'];
+        }
+        return self::returnMsg(200, 'success', $score);
+    }
 
     /**
      * 析构方法
