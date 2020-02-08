@@ -214,6 +214,9 @@ class Qiniu extends Api
                     $items = arraySort($listFiles[0]['items'], 'putTime', 'desc');
                     break;
             }
+            foreach ($items as $key => $value) {
+                $items[$key]['putDate'] = date('Y-m-d',substr($value['putTime'], 0, 10));
+            }
             $listFiles[0]['items'] = arrayKeyAsc($items);
             return self::returnMsg(200, 'success', $listFiles);
         } else {
