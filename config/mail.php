@@ -21,7 +21,7 @@ return [
     // SMTP用户名
     'Username'=>'15736736889@163.com',
     // SMTP密码
-    'Password'=>'0507HaI',
+    'Password'=>'YH2771638740',
     // 寄送人名称
     'Sender'=>'HaI',
     // 收件人名称
