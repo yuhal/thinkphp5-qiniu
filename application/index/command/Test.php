@@ -24,7 +24,6 @@ class Test extends Command
      */
     protected function configure()
     {
-        (new Mail)->sendEmailReminders('hello','hello');exit;
         $this->setName('Test')
             ->addArgument('bucket', Argument::OPTIONAL, "资源空间名", config('qiniu.bucket'))
             ->setDescription('
