@@ -22,12 +22,10 @@ return [
     'shared'              => '15736736889@163.com',
     // 默认仓库
     'bucket'              => 'yuhal-image',
-    // 临时仓库
-    'tempBucket'              => 'yuhal-temp',
     // 人脸图像库
     'faceGroup'              => 'test',
     // 允许批量重命名的文件后缀
     'mimeType'               => 'image/jpeg',
     // 上传目录
-    'updir'              => '/home/wwwroot/upload/',
+    'updir'              => 'upload/',
 ];
