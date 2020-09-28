@@ -35,7 +35,7 @@ class Authentication extends Controller
         $uid = input('uid');
         $accesstoken = input('accesstoken');
         $base = $appid.':'.$accesstoken.':'.$uid;
-        $opt['authentication'] = $uid." ".base64_encode($base);
+        $opt['authorization'] = $uid." ".base64_encode($base);
         return self::returnMsg(200, 'success', $opt);
     }
 }
