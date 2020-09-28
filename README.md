@@ -1,4 +1,4 @@
-# TP5-qiniu
+# thinkphp5-qiniu
 
 # 感谢
 
@@ -75,9 +75,25 @@ $ cd thinkphp5-qiniu
 $ composer install
 ```
 
+# 杂项
+
+- 批量重命名文件
+
+```
+$ php think Bbm
+```
+
+> 批量重命名某个空间下的文件，资源空间名为空则使用默认资源空间，命名格式为：空间名+uniqid()+文件类型后缀，例如：image-5504466231249035.png
+
+- 定时每天批量重命名文件
+
+```
+0 0 * * * /home/wwwroot/thinkphp5-qiniu/crond.sh
+```
+
 # API文档 
 
-[TP5-qiniu-document](https://www.showdoc.com.cn/471949144593097?page_id=2758354378180236 "TP5-qiniu-document")
+[thinkphp5-qiniu-document](https://www.showdoc.com.cn/471949144593097?page_id=2758354378180236 "thinkphp5-qiniu-document")
 
 # License 
 
