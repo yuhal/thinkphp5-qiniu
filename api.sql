@@ -35,7 +35,7 @@ CREATE TABLE `api_user` (
 -- Records of api_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `api_user` VALUES (1, 01234567890, 'admin', '000000', 1544087223, 1544087223, 1544087223);
+INSERT INTO `api_user` VALUES (1, 15888888888, 'admin', '000000', 1544087223, 1544087223, 1544087223);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
