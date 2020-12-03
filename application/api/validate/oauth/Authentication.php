@@ -11,12 +11,12 @@ class Authentication extends Validate
     protected $rule = [
         'appid'       =>  'require',
         'uid'      =>  'require',
-        'accesstoken'      =>  'require',
+        'access_token'      =>  'require',
+        'refresh_token' =>  'require'
     ];
-    protected $message  =   [
-        'appid.require'    => 'appid不能为空',
-        'uid.require'    => 'uid不能为空',
-        'accesstoken.require'    => 'accesstoken不能为空',
 
+    protected $scene = [
+        'index'  =>  ['appid','uid','access_token'],
+        'refresh'  =>  ['appid','refresh_token'],
     ];
 }

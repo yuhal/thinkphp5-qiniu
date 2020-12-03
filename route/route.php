@@ -9,20 +9,20 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-// 删除指定资源
-Route::delete('v1/delete','api/v1.qiniu/delete');
-
-// 获取authentication
-Route::resource('oauth/authentication/index', 'api/oauth.Authentication');
-
 // 获取sign
-Route::resource('oauth/sign/index', 'api/oauth.Sign');
+Route::get('oauth/sign/index', 'api/oauth.sign/index');
 
-// 生成access_token
-Route::post('oauth/token/token','api/oauth.token/token');
+// 获取access_token
+Route::get('oauth/token/token','api/oauth.token/token');
 
 // 刷新access_token  
-Route::post('oauth/token/refresh','api/oauth.token/refresh');  
+Route::get('oauth/token/refresh','api/oauth.token/refresh');  
+
+// 获取authentication
+Route::get('oauth/authentication/index', 'api/oauth.Authentication/index');
+
+// 删除指定资源
+Route::delete('v1/delete','api/v1.qiniu/delete');
 
 // 获取指定账号下所有的空间名。
 Route::get('v1/buckets','api/v1.qiniu/buckets');

@@ -2,40 +2,28 @@
 
 namespace app\api\controller\oauth;
 
-use app\api\controller\Send;
-use app\api\validate\oauth\Authentication as validate;
 use think\Controller;
-use think\Request;
+use app\api\controller\Send;
+use app\api\validate\oauth\Authentication as AuthenticationValidate;
 
 class Authentication extends Controller
 {
     use Send;
-    /**
-     * 构造方法
-     * @param Request $request Request对象
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->validate = new validate();
-    }
 
     /**
-     * 显示资源列表
-     *
+     * 获取authorization
+     * @param AuthenticationValidate $authenticationValidate
      * @return \think\Response
      */
-    public function index()
+    public function index(AuthenticationValidate $authenticationValidate)
     {
+        $params = input('get.');
         //参数验证
-        if (!$this->validate->check(input(''))) {
-            return self::returnMsg(401, $this->validate->getError());
+        if (!$authenticationValidate->scene('index')->check($params)) {
+            return self::returnMsg(401, $authenticationValidate->getError());
         }
-        $appid = input('appid');
-        $uid = input('uid');
-        $accesstoken = input('accesstoken');
-        $base = $appid.':'.$accesstoken.':'.$uid;
-        $opt['authorization'] = $uid." ".base64_encode($base);
-        return self::returnMsg(200, 'success', $opt);
+        $base = $params['appid'].':'.$params['access_token'].':'.$params['uid'];
+        $result['authorization'] = $params['uid']." ".base64_encode($base);
+        return self::returnMsg(200, 'success', $result);
     }
 }

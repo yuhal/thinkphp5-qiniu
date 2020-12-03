@@ -2,10 +2,12 @@
 namespace app\api\controller\oauth;
 
 use think\Request;
+use think\facade\Cache;
 use app\api\controller\Send;
 use app\api\controller\Oauth;
-use think\facade\Cache;
-use think\db;
+use app\api\model\ApiUser;
+use app\api\validate\oauth\Token as TokenValidate;
+use app\api\validate\oauth\Authentication as AuthenticationValidate;
 
 //主要为跨域CORS配置的两大基本信息,Origin和headers
 header('Access-Control-Allow-Origin: *');
@@ -39,21 +41,25 @@ class Token
     /**
      * 生成token
      */
-    public function token(Request $request)
-    {
-        //参数验证
-        $validate = new \app\api\validate\oauth\Token;
-        if (!$validate->check(input(''))) {
-            return self::returnMsg(401, $validate->getError());
+    public function token(
+        Request $request,
+        ApiUser $apiUser,
+        TokenValidate $tokenValidate
+    ){
+        $params = input('get.');
+        // 参数验证
+        if (!$tokenValidate->check($params)) {
+            return self::returnMsg(401, $tokenValidate->getError());
         }
-        self::checkParams(input(''));  //参数校验
-        $user = Db::table('api_user')->where('mobile', input('mobile'))->find();
+        // 传入参数应该是根据手机号查询改用户的数据
+        $user = $apiUser->getByMobile($params['mobile']);
+        self::checkParams($params, $user);  //参数校验
         $userInfo = [
             'uid'   => $user['id'],
-            'mobile'=> input('mobile')
+            'mobile'=> $user['mobile']
         ];
         try {
-            $accessToken = self::setAccessToken(array_merge($userInfo, input('')));  //传入参数应该是根据手机号查询改用户的数据
+            $accessToken = self::setAccessToken(array_merge($userInfo, $params));
             return self::returnMsg(200, 'success', $accessToken);
         } catch (Exception $e) {
             return self::returnMsg(500, 'fail', $e);
@@ -63,45 +69,52 @@ class Token
     /**
      * 刷新token
      */
-    public function refresh($refresh_token='', $appid = '')
-    {
-        $cache_refresh_token = Cache::get(self::$refreshAccessTokenPrefix.$appid);  //查看刷新token是否存在
-        if (!$cache_refresh_token) {
-            return self::returnMsg(401, 'fail', 'refresh_token is null');
+    public function refresh(
+        AuthenticationValidate $authenticationValidate,
+        ApiUser $apiUser
+    ){
+        $params = input('get.');
+        // 参数验证
+        if (!$authenticationValidate->scene('refresh')->check($params)) {
+            return self::returnMsg(401, $authenticationValidate->getError());
+        }
+        $cache_refresh_token = Cache::get(self::$refreshAccessTokenPrefix.$params['appid']);  //查看刷新token是否存在
+        if ($cache_refresh_token !== $params['refresh_token']) {
+            return self::returnMsg(401, 'fail', 'refresh_token is error');
         } else {
-            if ($cache_refresh_token !== $refresh_token) {
-                return self::returnMsg(401, 'fail', 'refresh_token is error');
-            } else {    //重新给用户生成调用token
-                $data['appid'] = $appid;
-                $accessToken = self::setAccessToken($data);
-                return self::returnMsg(200, 'success', $accessToken);
-            }
+            // 重新给用户生成调用token
+            $userInfo = $apiUser->field('id as uid,appid,mobile')
+                ->getByAppid($params['appid'])
+                ->toArray();
+            $accessToken = self::setAccessToken($userInfo);
+            return self::returnMsg(200, 'success', $accessToken);
         }
     }
 
     /**
      * 参数检测
      */
-    public static function checkParams($params = [])
+    public static function checkParams($params = [], $user)
     {
-        //时间戳校验
+        // 请求的头信息
+        $requestHeader = request()->header();
+        // 时间戳校验
         if (abs($params['timestamp'] - time()) > self::$timeDif) {
-            return self::returnMsg(401, '请求时间戳与服务器时间戳异常', 'timestamp：'.time());
+            return self::returnMsg(401, 'Request timestamp and server timestamp exception', $requestHeader);
         }
-        $user = Db::table('api_user')->where('mobile', $params['mobile'])->find();
         if (!$user) {
-            return self::returnMsg(401, '手机号不存在！');
+            return self::returnMsg(401, 'Mobile not found', $requestHeader);
         } else {
-            //appid检测，这里是在本地进行测试，正式的应该是查找数据库或者redis进行验证
+            // appid检测
             if ($params['appid'] != $user['appid']) {
-                return self::returnMsg(401, 'appid 不存在！');
+                return self::returnMsg(401, 'Appid not found', $requestHeader);
             }
             self::$appsercet = $user['appsercet'];
         }
-        //签名检测
+        // 签名检测
         $sign = Oauth::makeSign($params, self::$appsercet);
         if ($sign !== $params['sign']) {
-            return self::returnMsg(401, 'sign错误', 'sign：'.$sign);
+            return self::returnMsg(401, 'Invalid sign', $requestHeader);
         }
     }
 

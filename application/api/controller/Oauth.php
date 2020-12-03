@@ -68,13 +68,17 @@ class Oauth
      */
     public static function certification($data = [])
     {
-        $getCacheAccessToken = Cache::get(self::$accessTokenPrefix . $data['access_token']);  //获取缓存access_token
-
+        // 获取缓存access_token
+        $getCacheAccessToken = Cache::get(self::$accessTokenPrefix.$data['access_token']);
         if (!$getCacheAccessToken) {
-            return self::returnMsg(401, 'fail', "access_token不存在或为空");
+            return self::returnMsg(401, 'Invalid access token', Request::header(''));
         }
-        if ($getCacheAccessToken['client']['appid'] !== $data['appid']) {
-            return self::returnMsg(401, 'fail', "appid错误");  //appid与缓存中的appid不匹配
+        $checkUid = ($getCacheAccessToken['client']['uid'] == $data['uid']);
+        $checkAppid = ($getCacheAccessToken['client']['appid'] == $data['appid']);
+        $checkAccessToken = ($getCacheAccessToken['access_token'] == $data['access_token']);
+        if (!$checkUid || !$checkAppid || !$checkAccessToken) {
+            // appid与缓存中的appid不匹配
+            return self::returnMsg(401, 'Invalid appid', Request::header(''));
         }
         return $data;
     }

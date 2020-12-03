@@ -15,8 +15,4 @@ class Sign extends Validate
         'timestamp'      =>  'number|require',
         'nonce'      =>  'number|require',
     ];
-    protected $message  =   [
-        'appid.require'    => 'appid不能为空',
-        'mobile.mobile'    => '手机格式错误',
-    ];
 }
